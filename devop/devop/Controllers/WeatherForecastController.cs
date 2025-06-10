@@ -29,5 +29,11 @@ namespace devop.Controllers
             })
             .ToArray();
         }
+
+        [HttpGet("input")]
+        public async Task<IActionResult> Input([FromBody] string input)
+        {
+            return Ok(input);    
+        }
     }
 }
