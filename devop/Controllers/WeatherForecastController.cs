@@ -30,10 +30,11 @@ namespace devop.Controllers
             .ToArray();
         }
 
-        [HttpGet("input")]
+        [HttpPost("input")]
         public async Task<IActionResult> Input([FromBody] string input)
         {
-            return Ok(input);    
+            string name = input;
+            return Ok(name);       
         }
 
         [HttpGet("returnmyname")]
