@@ -14,13 +14,13 @@ pipeline {
             }
         }
 
-        stage('Login to Docker Hub') {
-            steps {
-                script {
-                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
-                }
-            }
-        }
+        // stage('Login to Docker Hub') {
+        //     steps {
+        //         script {
+        //             sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+        //         }
+        //     }
+        // }
 
         stage('Build Docker Image') {
             steps {
@@ -31,6 +31,9 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh "docker push ${IMAGE_NAME}"
+            }
+            steps {
+                sh "docker run -d -p 8080:8080 ${IMAGE_NAME}"
             }
         }
     }
