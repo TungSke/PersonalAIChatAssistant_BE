@@ -31,7 +31,7 @@ jobs:
         username: ${{ secrets.VM_USER }}
         password: ${{ secrets.VM_PASSWORD }}
         script: |
-          docker pull tungtrinh2003/devop:latest
-          docker stop devop || true
-          docker rm devop || true
-          docker run -d --name devop -p 8080:8080 tungtrinh2003/devop:latest
+          sudo docker pull tungtrinh2003/devop:latest
+          sudo docker stop devop || true
+          sudo docker rm devop || true
+          sudo docker run -d --name devop -p 8080:8080 tungtrinh2003/devop:latest
