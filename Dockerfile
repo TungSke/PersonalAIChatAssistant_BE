@@ -10,21 +10,21 @@ EXPOSE 8081
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Development
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["devop/devop.csproj", "devop/"]
-RUN dotnet restore "./devop/devop.csproj"
+COPY ["WaifuAIAssistant.APIs/WaifuAIAssistant.APIs.csproj", "WaifuAIAssistant.APIs/"]
+RUN dotnet restore "./WaifuAIAssistant.APIs/WaifuAIAssistant.APIs.csproj"
 COPY . .
-WORKDIR "/src/devop"
-RUN dotnet build "./devop.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/WaifuAIAssistant.APIs"
+RUN dotnet build "./WaifuAIAssistant.APIs.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Development
-RUN dotnet publish "./devop.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./WaifuAIAssistant.APIs.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "devop.dll"]
+ENTRYPOINT ["dotnet", "WaifuAIAssistant.APIs.dll"]

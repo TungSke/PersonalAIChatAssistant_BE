@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace devop.Controllers
+namespace WaifuAIAssistant.APIs.Controllers
 {
     [ApiController]
     [Route("[controller]")]
@@ -28,19 +28,6 @@ namespace devop.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
-        }
-
-        [HttpPost("input")]
-        public async Task<IActionResult> Input([FromBody] string input)
-        {
-            string name = input;
-            return Ok(name);       
-        }
-
-        [HttpGet("returnmyname")]
-        public async Task<IActionResult> NameReturn()
-        {
-            return Ok("tung dep trai nha!");
         }
     }
 }

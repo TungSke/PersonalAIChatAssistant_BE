@@ -1,4 +1,4 @@
-namespace devop
+namespace WaifuAIAssistant.APIs
 {
     public class WeatherForecast
     {

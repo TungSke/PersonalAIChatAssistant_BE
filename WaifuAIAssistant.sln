@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36202.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaifuAIAssistant.APIs", "WaifuAIAssistant.APIs\WaifuAIAssistant.APIs.csproj", "{131AE1D2-EBEC-45DB-8F69-25B4AEEECFF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaifuAIAssistant.Services", "WaifuAIAssistant.Services\WaifuAIAssistant.Services.csproj", "{6AB294E6-8000-4F6D-A21B-5A9DAD46DA72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaifuAIAssistant.Repositories", "WaifuAIAssistant.Repositories\WaifuAIAssistant.Repositories.csproj", "{F39A119B-9BD2-4ADB-8917-4535EFD656A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{131AE1D2-EBEC-45DB-8F69-25B4AEEECFF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{131AE1D2-EBEC-45DB-8F69-25B4AEEECFF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{131AE1D2-EBEC-45DB-8F69-25B4AEEECFF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{131AE1D2-EBEC-45DB-8F69-25B4AEEECFF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AB294E6-8000-4F6D-A21B-5A9DAD46DA72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AB294E6-8000-4F6D-A21B-5A9DAD46DA72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AB294E6-8000-4F6D-A21B-5A9DAD46DA72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AB294E6-8000-4F6D-A21B-5A9DAD46DA72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F39A119B-9BD2-4ADB-8917-4535EFD656A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F39A119B-9BD2-4ADB-8917-4535EFD656A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F39A119B-9BD2-4ADB-8917-4535EFD656A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F39A119B-9BD2-4ADB-8917-4535EFD656A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DB163B10-4E52-40BF-B80E-7EA905C5F616}
+	EndGlobalSection
+EndGlobal
