@@ -1,11 +1,14 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using WaifuAIAssistant.Application.Interfaces;
+using WaifuAIAssistant.Application.Service;
+using WaifuAIAssistant.Domain;
+using WaifuAIAssistant.Domain.Services;
 using WaifuAIAssistant.Infrastructure;
+using WaifuAIAssistant.Infrastructure.Externals;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -43,6 +46,12 @@ builder.Services.AddSwaggerGen(opt =>
                 });
 
 });
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ApplicationDbContext>();
+builder.Services.AddScoped<IPasswordHandlerService, PasswordHandlerService>();
+builder.Services.AddScoped<IJwtService, JWTService>();
 
 var app = builder.Build();
 

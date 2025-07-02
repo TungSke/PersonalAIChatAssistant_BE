@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaifuAIAssistant.Domain", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaifuAIAssistant.Application", "WaifuAIAssistant.Application\WaifuAIAssistant.Application.csproj", "{15B009B7-A7C1-D35A-C2FC-020707038780}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaifuAIAssistant.Infrastructure", "WaifuAIAssistant.Infrastructure\WaifuAIAssistant.Infrastructure.csproj", "{59B18C51-DD17-4391-A853-85A8CC303A63}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaifuAIAssistant.Infrastructure", "WaifuAIAssistant.Infrastructure\WaifuAIAssistant.Infrastructure.csproj", "{D584D774-FB8B-1E5B-AB98-29C3F1EA480E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{15B009B7-A7C1-D35A-C2FC-020707038780}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15B009B7-A7C1-D35A-C2FC-020707038780}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15B009B7-A7C1-D35A-C2FC-020707038780}.Release|Any CPU.Build.0 = Release|Any CPU
-		{59B18C51-DD17-4391-A853-85A8CC303A63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{59B18C51-DD17-4391-A853-85A8CC303A63}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{59B18C51-DD17-4391-A853-85A8CC303A63}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{59B18C51-DD17-4391-A853-85A8CC303A63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D584D774-FB8B-1E5B-AB98-29C3F1EA480E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D584D774-FB8B-1E5B-AB98-29C3F1EA480E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D584D774-FB8B-1E5B-AB98-29C3F1EA480E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D584D774-FB8B-1E5B-AB98-29C3F1EA480E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

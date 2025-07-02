@@ -1,0 +1,119 @@
+﻿using WaifuAIAssistant.Application.DTOs.Response;
+using WaifuAIAssistant.Application.Interfaces;
+using WaifuAIAssistant.Service.DTOs.Request;
+using WaifuAIAssistant.Service.DTOs.Response;
+using Microsoft.AspNetCore.Identity;
+using WaifuAIAssistant.Domain;
+using WaifuAIAssistant.Domain.Entities;
+using WaifuAIAssistant.Domain.Base;
+using WaifuAIAssistant.Domain.Services;
+using Mapster;
+using Microsoft.EntityFrameworkCore;
+
+namespace WaifuAIAssistant.Application.Service
+{
+    public class UserService : IUserService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPasswordHandlerService _passwordHandlerService;
+        private readonly IJwtService _jWTService;
+        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, IJwtService jWTService)
+        {
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _passwordHandlerService = passwordHandlerService ?? throw new ArgumentNullException(nameof(passwordHandlerService));
+            _jWTService=jWTService;
+        }
+
+        public async Task<Users> findUserByEmail(string email)
+        {
+            return await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(x => x.Email == email);
+        }
+
+        public async Task<Users> findUserById(Guid id)
+        {
+            return await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<ApiResponse<RegisterResponse>> Register(RegisterRequest request)
+        {
+            var userExsisted = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (userExsisted != null)
+            {
+                return new ApiResponse<RegisterResponse>
+                {
+                    Success = false,
+                    Message = "Email already exists",
+                    Errors = new List<string> { "Email already exists" }
+                };
+            }
+
+            if (request.Password != request.ConfirmPassword)
+            {
+                return new ApiResponse<RegisterResponse>
+                {
+                    Success = false,
+                    Message = "Passwords do not match",
+                    Errors = new List<string> { "Passwords do not match" }
+                };
+            }
+
+            //add new user
+            var newUser = request.Adapt<Users>();
+            newUser.Id = Guid.NewGuid();
+            newUser.CreatedAt = DateTime.UtcNow;
+            newUser.UpdatedAt = DateTime.UtcNow;
+            newUser.PasswordHash = _passwordHandlerService.HashPassword(request.Password);
+            await _unitOfWork.UserRepository.AddAsync(newUser);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiResponse<RegisterResponse>
+            {
+                Success = true,
+                Message = "Registration successful",
+            };
+        }
+
+        public async Task<ApiResponse<LoginResponse>> Login(LoginRequest request)
+        {
+            var user = await findUserByEmail(request.Email);
+            if (user == null)
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Invalid email or password",
+                    Errors = new List<string> { "Invalid email or password" }
+                };
+            }
+
+            var passwordVerificationResult = _passwordHandlerService.VerifyPassword(user.PasswordHash, request.Password);
+            if (passwordVerificationResult != PasswordVerificationResult.Success)
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Invalid email or password",
+                    Errors = new List<string> { "Invalid email or password" }
+                };
+            }
+
+            user.RefreshToken = await _jWTService.GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Set refresh token expiry time
+            await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Generate JWT token (optional, if you want to return it)
+            var jwtToken = await _jWTService.GenerateJwtToken(user);
+
+            return new ApiResponse<LoginResponse>
+            {
+                Success = true,
+                Message = "Login successful",
+                Data = new LoginResponse
+                {
+                    Token = jwtToken
+                }
+            };
+        }
+    }
+}
