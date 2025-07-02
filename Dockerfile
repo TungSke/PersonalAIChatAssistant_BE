@@ -12,19 +12,22 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["WaifuAIAssistant.APIs/WaifuAIAssistant.APIs.csproj", "WaifuAIAssistant.APIs/"]
-RUN dotnet restore "./WaifuAIAssistant.APIs/WaifuAIAssistant.APIs.csproj"
+COPY ["WaifuAIAssistant.API/WaifuAIAssistant.API.csproj", "WaifuAIAssistant.API/"]
+COPY ["WaifuAIAssistant.Application/WaifuAIAssistant.Application.csproj", "WaifuAIAssistant.Application/"]
+COPY ["WaifuAIAssistant.Domain/WaifuAIAssistant.Domain.csproj", "WaifuAIAssistant.Domain/"]
+COPY ["WaifuAIAssistant.Infrastructure/WaifuAIAssistant.Infrastructure.csproj", "WaifuAIAssistant.Infrastructure/"]
+RUN dotnet restore "./WaifuAIAssistant.API/WaifuAIAssistant.API.csproj"
 COPY . .
-WORKDIR "/src/WaifuAIAssistant.APIs"
-RUN dotnet build "./WaifuAIAssistant.APIs.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/WaifuAIAssistant.API"
+RUN dotnet build "./WaifuAIAssistant.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./WaifuAIAssistant.APIs.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./WaifuAIAssistant.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "WaifuAIAssistant.APIs.dll"]
+ENTRYPOINT ["dotnet", "WaifuAIAssistant.API.dll"]
