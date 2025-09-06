@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace WaifuAIAssistant.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -15,7 +17,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 name: "ModelCharacters",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Backstory = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Personality = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -32,14 +35,16 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Username = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -50,11 +55,12 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 name: "CharacterEmotions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     EmotionName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EmotionDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EmotionIconUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CharacterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    CharacterId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -71,9 +77,10 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 name: "Conversations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    WaifuId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    WaifuId = table.Column<int>(type: "int", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -98,9 +105,10 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SenderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ConversationId = table.Column<int>(type: "int", nullable: false),
+                    SenderId = table.Column<int>(type: "int", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -116,10 +124,44 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "ModelCharacters",
+                columns: new[] { "Id", "AvatarUrl", "Backstory", "CreatedAt", "Name", "Personality", "UpdatedAt" },
+                values: new object[] { 1, "https://example.com/default-character.png", "This is a default character for the application.", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Misono Mika", "Friendly and helpful", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "CreatedAt", "Email", "PasswordHash", "RefreshToken", "RefreshTokenExpiryTime", "Status", "UpdatedAt", "Username" },
+                values: new object[] { 1, new DateTime(2025, 7, 23, 9, 56, 4, 707, DateTimeKind.Utc).AddTicks(5541), "tung@example.com", "$2a$11$eW5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8", null, null, "Active", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Trinh Son Tung" });
+
+            migrationBuilder.InsertData(
+                table: "CharacterEmotions",
+                columns: new[] { "Id", "CharacterId", "EmotionDescription", "EmotionIconUrl", "EmotionName" },
+                values: new object[,]
+                {
+                    { 1, 1, "The character is feeling happy and cheerful.", "", "Happy" },
+                    { 2, 1, "The character is feeling sad", "", "Sad" },
+                    { 3, 1, "The character is feeling Angry", "", "Angry" },
+                    { 4, 1, "The character is feeling Embarasshing", "", "Embarasshing" },
+                    { 5, 1, "The character is feeling Hatred", "", "Hatred" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_CharacterEmotions_CharacterId",
                 table: "CharacterEmotions",
                 column: "CharacterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterEmotions_Id",
+                table: "CharacterEmotions",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Conversations_Id",
+                table: "Conversations",
+                column: "Id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Conversations_UserId",
@@ -135,6 +177,29 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 name: "IX_Messages_ConversationId",
                 table: "Messages",
                 column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_Id",
+                table: "Messages",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ModelCharacters_Id",
+                table: "ModelCharacters",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Id",
+                table: "Users",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Username_Email",
+                table: "Users",
+                columns: new[] { "Username", "Email" });
         }
 
         /// <inheritdoc />

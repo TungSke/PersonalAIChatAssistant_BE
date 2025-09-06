@@ -9,7 +9,7 @@ cd WaifuAIAssistant.Infrastructure
 ### 2. Tạo migration mới
 
 ```
-dotnet ef migrations add AddProductTable --startup-project ../WaifuAIAssistant.API
+dotnet ef migrations add AddTable --startup-project ../WaifuAIAssistant.API
 ```
 
 ### 3. Cập nhật database (apply migration)

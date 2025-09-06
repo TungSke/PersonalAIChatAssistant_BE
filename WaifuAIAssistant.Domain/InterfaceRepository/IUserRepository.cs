@@ -1,5 +1,5 @@
 ﻿using WaifuAIAssistant.Domain.Entities;
-namespace WaifuAIAssistant.Domain.Interfaces
+namespace WaifuAIAssistant.Domain.InterfaceRepository
 {
     public interface IUserRepository : IRepository<Users>
     {

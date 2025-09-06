@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WaifuAIAssistant.Domain.Entities
+﻿namespace WaifuAIAssistant.Domain.Entities
 {
     public class Conversation
     {
-        public Guid Id { get; set; }
-        public Guid UserId { get; set; }
-        public Guid? WaifuId { get; set; }
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public int? WaifuId { get; set; }
         public string Title { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

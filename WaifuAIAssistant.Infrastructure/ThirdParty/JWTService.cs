@@ -4,9 +4,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WaifuAIAssistant.Domain.Entities;
-using WaifuAIAssistant.Domain.Services;
+using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
-namespace WaifuAIAssistant.Infrastructure.Externals
+namespace WaifuAIAssistant.Infrastructure.ThirdParty
 {
     public class JWTService : IJwtService
     {
@@ -40,7 +40,7 @@ namespace WaifuAIAssistant.Infrastructure.Externals
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public string? GetUserIdFromJwt(string jwtToken)
+        public int? GetUserIdFromJwt(string jwtToken)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
@@ -48,7 +48,7 @@ namespace WaifuAIAssistant.Infrastructure.Externals
             var userIdClaim = jwtSecurityToken.Claims.FirstOrDefault(c =>
                 c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "userId");
 
-            return userIdClaim?.Value;
+            return int.Parse(userIdClaim?.Value);
         }
 
         public async Task<string> GenerateRefreshToken()

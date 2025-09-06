@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using WaifuAIAssistant.Application.Interfaces;
@@ -5,7 +6,8 @@ using WaifuAIAssistant.Application.Service;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Services;
 using WaifuAIAssistant.Infrastructure;
-using WaifuAIAssistant.Infrastructure.Externals;
+using WaifuAIAssistant.Infrastructure.ThirdParty;
+using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,11 +49,26 @@ builder.Services.AddSwaggerGen(opt =>
 
 });
 
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ApplicationDbContext>();
 builder.Services.AddScoped<IPasswordHandlerService, PasswordHandlerService>();
 builder.Services.AddScoped<IJwtService, JWTService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<GoogleService>();
+builder.Services.AddScoped<IMemoryCache, MemoryCache>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IModelsCharacterService, ModelsCharacterService>();
+builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+//builder.Services.AddScoped<ICacheService, RedisCacheService>();
+
+
+//add redis cache service
+//builder.Services.AddStackExchangeRedisCache(options =>
+//{
+//    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+//    options.InstanceName = "tungdeptrairedis";
+//});
 
 var app = builder.Build();
 

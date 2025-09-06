@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using WaifuAIAssistant.Domain.Base;
+using WaifuAIAssistant.Domain.Entities;
+
+namespace WaifuAIAssistant.Application.Interfaces
+{
+    public interface ICharacterEmotionService
+    {
+        Task<ApiResponse<List<CharacterEmotions>>> GetCharacterEmotion(int characterid);
+    }
+}

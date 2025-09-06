@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using WaifuAIAssistant.Domain.Services;
 
-namespace WaifuAIAssistant.Infrastructure.Externals
+namespace WaifuAIAssistant.Infrastructure.ThirdParty
 {
     public class PasswordHandlerService : IPasswordHandlerService
     {

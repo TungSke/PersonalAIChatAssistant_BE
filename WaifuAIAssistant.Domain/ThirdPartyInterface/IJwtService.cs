@@ -1,11 +1,11 @@
 ﻿using WaifuAIAssistant.Domain.Entities;
 
-namespace WaifuAIAssistant.Domain.Services
+namespace WaifuAIAssistant.Domain.ThirdPartyInterface
 {
     public interface IJwtService
     {
         Task<string> GenerateJwtToken(Users user);
-        string? GetUserIdFromJwt(string jwtToken);
+        int? GetUserIdFromJwt(string jwtToken);
         Task<string> GenerateRefreshToken();
     }
 }
