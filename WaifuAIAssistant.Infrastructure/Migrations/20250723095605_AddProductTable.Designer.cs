@@ -12,7 +12,7 @@ using WaifuAIAssistant.Infrastructure;
 namespace WaifuAIAssistant.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250702133510_AddProductTable")]
+    [Migration("20250723095605_AddProductTable")]
     partial class AddProductTable
     {
         /// <inheritdoc />
@@ -27,12 +27,14 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.CharacterEmotions", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("CharacterId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
 
                     b.Property<string>("EmotionDescription")
                         .IsRequired()
@@ -50,14 +52,61 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
                     b.HasIndex("CharacterId");
 
+                    b.HasIndex("Id")
+                        .IsUnique();
+
                     b.ToTable("CharacterEmotions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CharacterId = 1,
+                            EmotionDescription = "The character is feeling happy and cheerful.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Happy"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CharacterId = 1,
+                            EmotionDescription = "The character is feeling sad",
+                            EmotionIconUrl = "",
+                            EmotionName = "Sad"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CharacterId = 1,
+                            EmotionDescription = "The character is feeling Angry",
+                            EmotionIconUrl = "",
+                            EmotionName = "Angry"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CharacterId = 1,
+                            EmotionDescription = "The character is feeling Embarasshing",
+                            EmotionIconUrl = "",
+                            EmotionName = "Embarasshing"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CharacterId = 1,
+                            EmotionDescription = "The character is feeling Hatred",
+                            EmotionIconUrl = "",
+                            EmotionName = "Hatred"
+                        });
                 });
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.Conversation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -69,13 +118,16 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid?>("WaifuId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("WaifuId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -86,22 +138,24 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.Message", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("SenderId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -110,14 +164,19 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
                     b.HasIndex("ConversationId");
 
+                    b.HasIndex("Id")
+                        .IsUnique();
+
                     b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.ModelsCharacter", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AvatarUrl")
                         .IsRequired()
@@ -143,14 +202,31 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Id")
+                        .IsUnique();
+
                     b.ToTable("ModelCharacters", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AvatarUrl = "https://example.com/default-character.png",
+                            Backstory = "This is a default character for the application.",
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Misono Mika",
+                            Personality = "Friendly and helpful",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
                 });
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.Users", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -170,6 +246,9 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -180,7 +259,24 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.HasIndex("Username", "Email");
+
                     b.ToTable("Users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 7, 23, 9, 56, 4, 707, DateTimeKind.Utc).AddTicks(5541),
+                            Email = "tung@example.com",
+                            PasswordHash = "$2a$11$eW5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8",
+                            Status = "Active",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Username = "Trinh Son Tung"
+                        });
                 });
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.CharacterEmotions", b =>

@@ -1,14 +1,17 @@
-﻿using WaifuAIAssistant.Application.DTOs.Response;
+﻿using Mapster;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using WaifuAIAssistant.Application.DTOs.Request;
+using WaifuAIAssistant.Application.DTOs.Response;
 using WaifuAIAssistant.Application.Interfaces;
+using WaifuAIAssistant.Domain;
+using WaifuAIAssistant.Domain.Base;
+using WaifuAIAssistant.Domain.Entities;
+using WaifuAIAssistant.Domain.Services;
+using WaifuAIAssistant.Domain.ThirdPartyInterface;
+using WaifuAIAssistant.Infrastructure.ThirdParty;
 using WaifuAIAssistant.Service.DTOs.Request;
 using WaifuAIAssistant.Service.DTOs.Response;
-using Microsoft.AspNetCore.Identity;
-using WaifuAIAssistant.Domain;
-using WaifuAIAssistant.Domain.Entities;
-using WaifuAIAssistant.Domain.Base;
-using WaifuAIAssistant.Domain.Services;
-using Mapster;
-using Microsoft.EntityFrameworkCore;
 
 namespace WaifuAIAssistant.Application.Service
 {
@@ -17,11 +20,13 @@ namespace WaifuAIAssistant.Application.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHandlerService _passwordHandlerService;
         private readonly IJwtService _jWTService;
-        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, IJwtService jWTService)
+        private readonly GoogleService _googleService;
+        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, IJwtService jWTService, GoogleService googleService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _passwordHandlerService = passwordHandlerService ?? throw new ArgumentNullException(nameof(passwordHandlerService));
             _jWTService=jWTService;
+            _googleService=googleService;
         }
 
         public async Task<Users> findUserByEmail(string email)
@@ -29,7 +34,7 @@ namespace WaifuAIAssistant.Application.Service
             return await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(x => x.Email == email);
         }
 
-        public async Task<Users> findUserById(Guid id)
+        public async Task<Users> findUserById(int id)
         {
             return await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
         }
@@ -43,7 +48,6 @@ namespace WaifuAIAssistant.Application.Service
                 {
                     Success = false,
                     Message = "Email already exists",
-                    Errors = new List<string> { "Email already exists" }
                 };
             }
 
@@ -59,7 +63,7 @@ namespace WaifuAIAssistant.Application.Service
 
             //add new user
             var newUser = request.Adapt<Users>();
-            newUser.Id = Guid.NewGuid();
+            newUser.Id = new int();
             newUser.CreatedAt = DateTime.UtcNow;
             newUser.UpdatedAt = DateTime.UtcNow;
             newUser.PasswordHash = _passwordHandlerService.HashPassword(request.Password);
@@ -72,6 +76,35 @@ namespace WaifuAIAssistant.Application.Service
                 Message = "Registration successful",
             };
         }
+
+        public async Task<ApiResponse<string>> VerifyAccount(VerifyAccountRequest request)
+        {
+            var isOtpValid = await _googleService.VerifyOtp(request.Email, request.Otp);
+
+            if (!isOtpValid)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid OTP",
+                    Errors = new List<string> { "Invalid OTP" }
+                };
+            }
+
+            var user = await findUserByEmail(request.Email);
+            if (user == null)
+            {
+                return new ApiResponse<string>{ Success = false, Message = "Invalid OTP", Errors = new List<string> { "Invalid OTP" } };
+            }
+
+            user.Status = "Active";
+            await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiResponse<string> { Success = true, Message = "verify success"};
+        }
+
+
 
         public async Task<ApiResponse<LoginResponse>> Login(LoginRequest request)
         {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using WaifuAIAssistant.Infrastructure;
 
 namespace WaifuAIAssistant.Domain.Base
@@ -47,6 +48,35 @@ namespace WaifuAIAssistant.Domain.Base
         public async Task UpdateRange(IEnumerable<T> entities)
         {
             _context.Set<T>().UpdateRange(entities);
+        }
+
+        public async Task<IEnumerable<T>> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            Expression<Func<T, bool>>? predicate = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            Func<IQueryable<T>, IQueryable<T>>? include = null)
+        {
+            IQueryable<T> query = _context.Set<T>();
+            if (include != null)
+            {
+                query = include(query);
+            }
+            if (pageNumber == 0) pageNumber = 1;
+            if (pageSize == 0) pageSize = 10;
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+            return await query.Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize)
+                              .AsNoTracking()
+                              .ToListAsync();
         }
     }
 }

@@ -1,8 +1,12 @@
-﻿namespace WaifuAIAssistant.Domain.Entities
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace WaifuAIAssistant.Domain.Entities
 {
+
+    [Index(nameof(Id))]
     public class ModelsCharacter
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public required string Name { get; set; }
         public required string Backstory { get; set; }
         public required string Personality { get; set; } 

@@ -8,6 +8,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Mapster" Version="7.4.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.17" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.7" />
 		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.6" />
 	</ItemGroup>
 

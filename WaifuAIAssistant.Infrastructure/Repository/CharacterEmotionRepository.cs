@@ -2,13 +2,12 @@
 using WaifuAIAssistant.Domain.Entities;
 using WaifuAIAssistant.Domain.InterfaceRepository;
 
-
 namespace WaifuAIAssistant.Infrastructure.Repository
 {
-    public class UserRepository : Repository<Users>, IUserRepository
+    public class CharacterEmotionRepository : Repository<CharacterEmotions>, ICharacterEmotionsRepository
     {
-        public UserRepository(ApplicationDbContext context) : base(context)
-        {         
+        public CharacterEmotionRepository(ApplicationDbContext context) : base(context)
+        {
         }
     }
 }
