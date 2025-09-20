@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WaifuAIAssistant.Application.Interfaces;
 
@@ -6,6 +7,7 @@ namespace WaifuAIAssistant.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CharacterEmotionController : ControllerBase
     {
         private readonly ICharacterEmotionService _characterEmotionService;
