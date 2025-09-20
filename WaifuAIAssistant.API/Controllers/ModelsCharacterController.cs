@@ -8,6 +8,7 @@ namespace WaifuAIAssistant.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ModelsCharacterController : ControllerBase
     {
         private readonly IModelsCharacterService _modelsCharacterService;

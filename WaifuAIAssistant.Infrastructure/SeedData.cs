@@ -75,6 +75,18 @@ namespace WaifuAIAssistant.Infrastructure
                     CharacterId = 1,
                 }
                 );
+
+            modelBuilder.Entity<Conversation>().HasData(
+                new Conversation
+                {
+                    Id = 1,
+                    UserId = 1,
+                    WaifuId = 1,
+                    Title = "Test",
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                }
+                );
         }
     }
 }

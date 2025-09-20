@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace WaifuAIAssistant.API.Middleware
 {
-    // You may need to install the Microsoft.AspNetCore.Http.Abstractions package into your project
-    public class GlobalExceptionHandlingMiddleware : IMiddleware
+    public class GlobalExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
@@ -18,22 +15,40 @@ namespace WaifuAIAssistant.API.Middleware
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+        public async Task InvokeAsync(HttpContext context)
         {
             try
             {
-                await next(context);
+                await _next(context);
+
+                // Trường hợp request đi qua mà ra 401/403 từ pipeline (Auth middleware)
+                if (!context.Response.HasStarted &&
+                    (context.Response.StatusCode == StatusCodes.Status401Unauthorized ||
+                     context.Response.StatusCode == StatusCodes.Status403Forbidden))
+                {
+                    await WriteErrorResponseAsync(context, context.Response.StatusCode,
+                        context.Response.StatusCode == 401 ? "Unauthorized access" : "Forbidden access");
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{ex.Message}");
-                await HandleExceptionAsync(context, ex);
+                _logger.LogError(ex, "Unhandled exception");
+
+                if (!context.Response.HasStarted)
+                {
+                    await HandleExceptionAsync(context, ex);
+                }
+                else
+                {
+                    _logger.LogWarning("Response has already started, unable to write error response.");
+                }
             }
         }
 
         private static Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
             var statusCode = HttpStatusCode.InternalServerError;
+
             switch (ex)
             {
                 case KeyNotFoundException:
@@ -43,27 +58,30 @@ namespace WaifuAIAssistant.API.Middleware
                     statusCode = HttpStatusCode.NotImplemented;
                     break;
                 case ArgumentException:
-                    statusCode = HttpStatusCode.BadRequest;
-                    break;
                 case NullReferenceException:
                     statusCode = HttpStatusCode.BadRequest;
                     break;
                 case UnauthorizedAccessException:
                     statusCode = HttpStatusCode.Unauthorized;
                     break;
-                default:
-                    break;
             }
+
+            return WriteErrorResponseAsync(context, (int)statusCode, ex.Message, ex.StackTrace);
+        }
+
+        private static Task WriteErrorResponseAsync(HttpContext context, int statusCode, string message, string? details = null)
+        {
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)statusCode;
-            var result = new
+            context.Response.StatusCode = statusCode;
+
+            var response = new
             {
-                StatusCode = (int)statusCode,
-                Message = "An error occurred while processing your request.",
-                Details = ex.Message
+                Code = statusCode,
+                Message = message,
+                Details = details
             };
 
-            return context.Response.WriteAsJsonAsync(result);
+            return context.Response.WriteAsJsonAsync(response);
         }
     }
 

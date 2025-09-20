@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -6,17 +7,20 @@ using System.Text;
 using WaifuAIAssistant.Domain.Entities;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
+
 namespace WaifuAIAssistant.Infrastructure.ThirdParty
 {
     public class JWTService : IJwtService
     {
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public JWTService() { }
 
-        public JWTService(IConfiguration configuration)
+        public JWTService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<string> GenerateJwtToken(Users user)
@@ -40,15 +44,11 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public int? GetUserIdFromJwt(string jwtToken)
+        public async Task<int> GetUserId()
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
-
-            var userIdClaim = jwtSecurityToken.Claims.FirstOrDefault(c =>
-                c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "userId");
-
-            return int.Parse(userIdClaim?.Value);
+            var userId = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userIdInt = userId != null ? int.Parse(userId) : 0;
+            return userIdInt;
         }
 
         public async Task<string> GenerateRefreshToken()
