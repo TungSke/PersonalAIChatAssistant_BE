@@ -87,6 +87,7 @@ builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IModelsCharacterService, ModelsCharacterService>();
 builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IGenerationAIService, GenerationAIService>();
 //builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 

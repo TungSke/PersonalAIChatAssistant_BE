@@ -12,8 +12,8 @@ using WaifuAIAssistant.Infrastructure;
 namespace WaifuAIAssistant.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250723095605_AddProductTable")]
-    partial class AddProductTable
+    [Migration("20250927072409_AddTable")]
+    partial class AddTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -134,6 +134,17 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.HasIndex("WaifuId");
 
                     b.ToTable("Conversations", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 9, 27, 14, 24, 9, 307, DateTimeKind.Local).AddTicks(7715),
+                            Title = "Test",
+                            UpdatedAt = new DateTime(2025, 9, 27, 14, 24, 9, 307, DateTimeKind.Local).AddTicks(7725),
+                            UserId = 1,
+                            WaifuId = 1
+                        });
                 });
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.Message", b =>
@@ -154,11 +165,14 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("SenderId")
+                    b.Property<int?>("ModelCharacterId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -166,6 +180,10 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
                     b.HasIndex("Id")
                         .IsUnique();
+
+                    b.HasIndex("ModelCharacterId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Messages", (string)null);
                 });
@@ -213,10 +231,10 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                             Id = 1,
                             AvatarUrl = "https://example.com/default-character.png",
                             Backstory = "This is a default character for the application.",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7663),
                             Name = "Misono Mika",
                             Personality = "Friendly and helpful",
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                            UpdatedAt = new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7664)
                         });
                 });
 
@@ -270,7 +288,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 7, 23, 9, 56, 4, 707, DateTimeKind.Utc).AddTicks(5541),
+                            CreatedAt = new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7553),
                             Email = "tung@example.com",
                             PasswordHash = "$2a$11$eW5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8",
                             Status = "Active",
@@ -315,7 +333,21 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("WaifuAIAssistant.Domain.Entities.ModelsCharacter", "ModelsCharacter")
+                        .WithMany()
+                        .HasForeignKey("ModelCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WaifuAIAssistant.Domain.Entities.Users", "Users")
+                        .WithMany("Messages")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Conversation");
+
+                    b.Navigation("ModelsCharacter");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.Conversation", b =>
@@ -331,6 +363,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.Users", b =>
                 {
                     b.Navigation("Conversations");
+
+                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }

@@ -16,8 +16,8 @@ namespace WaifuAIAssistant.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        public virtual Conversation Conversation { get; set; } = null!;
-        public virtual Users Users { get; set; } = null!;
-        public virtual ModelsCharacter ModelsCharacter { get; set; } = null!;
+        public virtual Conversation Conversation { get; set; } 
+        public virtual Users? Users { get; set; }
+        public virtual ModelsCharacter? ModelsCharacter { get; set; }
     }
 }
