@@ -87,6 +87,7 @@ namespace WaifuAIAssistant.Infrastructure
             {
                 entity.ToTable("Messages");
                 entity.HasIndex(e => e.Id).IsUnique();
+
                 entity.HasOne(m => m.Conversation)
                     .WithMany(c => c.Messages)
                     .HasForeignKey(m => m.ConversationId)
@@ -96,7 +97,13 @@ namespace WaifuAIAssistant.Infrastructure
                     .WithMany(u => u.Messages)
                     .HasForeignKey(m => m.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(m => m.ModelsCharacter)
+                    .WithMany()
+                    .HasForeignKey(m => m.ModelCharacterId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
+
 
 
             SeedData.Initialize(modelBuilder);

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WaifuAIAssistant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddProductTable : Migration
+    public partial class AddTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -108,7 +108,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ConversationId = table.Column<int>(type: "int", nullable: false),
-                    SenderId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    ModelCharacterId = table.Column<int>(type: "int", nullable: true),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -122,17 +123,29 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         principalTable: "Conversations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Messages_ModelCharacters_ModelCharacterId",
+                        column: x => x.ModelCharacterId,
+                        principalTable: "ModelCharacters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Messages_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.InsertData(
                 table: "ModelCharacters",
                 columns: new[] { "Id", "AvatarUrl", "Backstory", "CreatedAt", "Name", "Personality", "UpdatedAt" },
-                values: new object[] { 1, "https://example.com/default-character.png", "This is a default character for the application.", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Misono Mika", "Friendly and helpful", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) });
+                values: new object[] { 1, "https://example.com/default-character.png", "This is a default character for the application.", new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7663), "Misono Mika", "Friendly and helpful", new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7664) });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "Email", "PasswordHash", "RefreshToken", "RefreshTokenExpiryTime", "Status", "UpdatedAt", "Username" },
-                values: new object[] { 1, new DateTime(2025, 7, 23, 9, 56, 4, 707, DateTimeKind.Utc).AddTicks(5541), "tung@example.com", "$2a$11$eW5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8", null, null, "Active", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Trinh Son Tung" });
+                values: new object[] { 1, new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7553), "tung@example.com", "$2a$11$eW5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8", null, null, "Active", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Trinh Son Tung" });
 
             migrationBuilder.InsertData(
                 table: "CharacterEmotions",
@@ -145,6 +158,11 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     { 4, 1, "The character is feeling Embarasshing", "", "Embarasshing" },
                     { 5, 1, "The character is feeling Hatred", "", "Hatred" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "Conversations",
+                columns: new[] { "Id", "CreatedAt", "Title", "UpdatedAt", "UserId", "WaifuId" },
+                values: new object[] { 1, new DateTime(2025, 9, 27, 14, 24, 9, 307, DateTimeKind.Local).AddTicks(7715), "Test", new DateTime(2025, 9, 27, 14, 24, 9, 307, DateTimeKind.Local).AddTicks(7725), 1, 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CharacterEmotions_CharacterId",
@@ -183,6 +201,16 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 table: "Messages",
                 column: "Id",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ModelCharacterId",
+                table: "Messages",
+                column: "ModelCharacterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_UserId",
+                table: "Messages",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ModelCharacters_Id",

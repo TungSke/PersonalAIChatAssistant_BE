@@ -13,7 +13,7 @@ namespace WaifuAIAssistant.Infrastructure
                 {
                     Id = 1,
                     Email = "tung@example.com",
-                    PasswordHash = "$2a$11$eW5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8", // Example hashed password
+                    PasswordHash = "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==", // Example hashed password
                     Username = "Trinh Son Tung",
                     Status = "Active",
                     CreatedAt = DateTime.UtcNow,

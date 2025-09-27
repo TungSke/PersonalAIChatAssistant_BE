@@ -1,4 +1,5 @@
-﻿using Mapster;
+﻿using Azure;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using WaifuAIAssistant.Application.DTOs.Request;
 using WaifuAIAssistant.Application.DTOs.Response;
@@ -14,16 +15,19 @@ namespace WaifuAIAssistant.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtService _jwtService;
-        public MessageService(IUnitOfWork unitOfWork, IJwtService jwtService)
+        private readonly IGenerationAIService _generationAIService;
+
+        public MessageService(IUnitOfWork unitOfWork, IJwtService jwtService, IGenerationAIService generationAIService)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
+            _generationAIService = generationAIService;
         }
 
         public async Task<ApiResponse<List<MessageResponse>>> GetMessagesFromConversation(int conversationId)
         {
             var userId = await _jwtService.GetUserId();
-            var list = await _unitOfWork.MessageRepository.GetAll().Where(x => x.ConversationId == conversationId && x.UserId == userId).ToListAsync();
+            var list = await _unitOfWork.MessageRepository.GetAll().Where(x => x.ConversationId == conversationId).ToListAsync();
             var response = list.Adapt<List<MessageResponse>>();
             return new ApiResponse<List<MessageResponse>>
             {
@@ -32,40 +36,85 @@ namespace WaifuAIAssistant.Application.Service
             };
         }
 
-        public async Task<ApiResponse<MessageRequest>> CreateMessage(MessageRequest request)
+        public async Task<ApiResponse<string>> CreateMessage(MessageRequest request)
         {
             try
             {
                 var userId = await _jwtService.GetUserId();
-                var conversationExisted = await _unitOfWork.ConversationRepository.GetAll().FirstOrDefaultAsync(x => x.Id == request.ConversationId);
-                if(conversationExisted == null)
+
+                var conversation = await _unitOfWork.ConversationRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Id == request.ConversationId);
+
+                if (conversation == null)
                 {
-                    return new ApiResponse<MessageRequest>
+                    return new ApiResponse<string>
                     {
                         Success = false,
-                        Message = "Not found conversation",
+                        Message = "Conversation not found"
                     };
                 }
 
-                var messageCreate = request.Adapt<Message>();
-                messageCreate.UserId = userId;
-                await _unitOfWork.MessageRepository.AddAsync(messageCreate);
+                // Tạo message từ user
+                var userMessage = new Message
+                {
+                    ConversationId = conversation.Id,
+                    UserId = userId,
+                    ModelCharacterId = null,
+                    Content = request.Content,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.MessageRepository.AddAsync(userMessage);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Nếu muốn AI trả lời
+                var modelCharacter = await _unitOfWork.ModelRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Id == conversation.WaifuId);
+
+                string aiResponse = string.Empty;
+                if (modelCharacter != null)
+                {
+                    aiResponse = await _generationAIService.Response(
+                        request.ConversationId,
+                        modelCharacter,
+                        request.Content,
+                        userId
+                    );
+
+                    var aiMessage = new Message
+                    {
+                        ConversationId = conversation.Id,
+                        UserId = null,
+                        ModelCharacterId = modelCharacter.Id,
+                        Content = aiResponse,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    await _unitOfWork.MessageRepository.AddAsync(aiMessage);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
+                return new ApiResponse<string>
+                {
+                    Success = true,
+                    Message = "Create success!",
+                    Data = aiResponse
+                };
             }
             catch (Exception e)
             {
-                return new ApiResponse<MessageRequest>
+                return new ApiResponse<string>
                 {
                     Success = false,
-                    Message = e.Message
+                    Message = e.Message,
+                    Data = e.InnerException?.ToString()
                 };
             }
-            return new ApiResponse<MessageRequest>
-            {
-                Success = true,
-                Message = "Create success!",
-                Data = request
-            };
         }
+
     }
 }
