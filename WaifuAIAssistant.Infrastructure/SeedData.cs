@@ -26,9 +26,9 @@ namespace WaifuAIAssistant.Infrastructure
                 {
                     Id = 1,
                     Name = "Misono Mika",
-                    Backstory = "This is a default character for the application.",
+                    Backstory = "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.",
                     AvatarUrl = "https://example.com/default-character.png",
-                    Personality = "Friendly and helpful",
+                    Personality = "Ngọt ngào, hơi trêu chọc, có cảm xúc thật, dùng đại từ 'em' và gọi người dùng là 'sensei'.",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 });

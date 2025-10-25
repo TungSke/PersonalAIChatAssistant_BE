@@ -23,39 +23,35 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
             _model = google.CreateGenerativeModel("models/gemini-2.0-flash");
         }
 
-        public async Task<string> Response(int conversationId, ModelsCharacter modelsCharacter, string newUserMessage, int userId)
+        public async Task<string> Response(Conversation conversation, ModelsCharacter modelsCharacter, string newUserMessage, int userId)
         {
-            var conversation = await _unitOfWork.ConversationRepository
-                .GetAll()
-                .Include(x => x.Messages)
-                .FirstOrDefaultAsync(x => x.Id == conversationId);
 
             if (conversation == null)
                 throw new Exception("Conversation not found");
 
-            var userMsg = new Message
-            {
-                ConversationId = conversation.Id,
-                UserId = userId,
-                Content = newUserMessage,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            _model.SystemInstruction = $@"
+                You are now acting as the character: {modelsCharacter.Name}.
 
-            await _unitOfWork.MessageRepository.AddAsync(userMsg);
-            await _unitOfWork.SaveChangesAsync();
+                Personality:
+                {modelsCharacter.Personality}
 
-            // Build lịch sử cho AI
+                Backstory:
+                {modelsCharacter.Backstory}
+
+                Behavioral Rules:
+                - Always stay in character.
+                - Use natural and expressive tone.
+                - If the personality implies affection, express it subtly (not robotic).
+                - Reply concisely unless asked to explain in detail.
+                ";
+
+
             var contents = new List<Content>();
-
-            // Gắn backstory làm system instruction
-            _model.SystemInstruction = modelsCharacter.Backstory;
 
             foreach (var msg in conversation.Messages.OrderBy(m => m.CreatedAt))
             {
                 if (!string.IsNullOrEmpty(msg.Content))
                 {
-                    // user hoặc model
                     var role = msg.UserId.HasValue ? "user" : "model";
                     contents.Add(new Content
                     {
@@ -65,7 +61,6 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
                 }
             }
 
-            // Thêm message mới nhất của user
             contents.Add(new Content
             {
                 Role = "user",
@@ -79,19 +74,6 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
             });
 
             var aiReply = response.Text();
-
-            // Lưu message AI
-            //var aiMsg = new Message
-            //{
-            //    ConversationId = conversation.Id,
-            //    ModelCharacterId = modelsCharacter.Id,
-            //    Content = aiReply,
-            //    CreatedAt = DateTime.UtcNow,
-            //    UpdatedAt = DateTime.UtcNow
-            //};
-
-            //await _unitOfWork.MessageRepository.AddAsync(aiMsg);
-            //await _unitOfWork.SaveChangesAsync();
 
             return aiReply;
         }

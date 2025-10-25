@@ -42,11 +42,11 @@ namespace WaifuAIAssistant.Application.Service
             {
                 var userId = await _jwtService.GetUserId();
 
-                var conversation = await _unitOfWork.ConversationRepository
+                var conversationExisted = await _unitOfWork.ConversationRepository
                     .GetAll()
                     .FirstOrDefaultAsync(x => x.Id == request.ConversationId);
 
-                if (conversation == null)
+                if (conversationExisted == null)
                 {
                     return new ApiResponse<string>
                     {
@@ -55,10 +55,10 @@ namespace WaifuAIAssistant.Application.Service
                     };
                 }
 
-                // Tạo message từ user
+
                 var userMessage = new Message
                 {
-                    ConversationId = conversation.Id,
+                    ConversationId = conversationExisted.Id,
                     UserId = userId,
                     ModelCharacterId = null,
                     Content = request.Content,
@@ -69,16 +69,15 @@ namespace WaifuAIAssistant.Application.Service
                 await _unitOfWork.MessageRepository.AddAsync(userMessage);
                 await _unitOfWork.SaveChangesAsync();
 
-                // Nếu muốn AI trả lời
                 var modelCharacter = await _unitOfWork.ModelRepository
                     .GetAll()
-                    .FirstOrDefaultAsync(x => x.Id == conversation.WaifuId);
+                    .FirstOrDefaultAsync(x => x.Id == conversationExisted.WaifuId);
 
                 string aiResponse = string.Empty;
                 if (modelCharacter != null)
                 {
                     aiResponse = await _generationAIService.Response(
-                        request.ConversationId,
+                        conversationExisted,
                         modelCharacter,
                         request.Content,
                         userId
@@ -86,7 +85,7 @@ namespace WaifuAIAssistant.Application.Service
 
                     var aiMessage = new Message
                     {
-                        ConversationId = conversation.Id,
+                        ConversationId = conversationExisted.Id,
                         UserId = null,
                         ModelCharacterId = modelCharacter.Id,
                         Content = aiResponse,
