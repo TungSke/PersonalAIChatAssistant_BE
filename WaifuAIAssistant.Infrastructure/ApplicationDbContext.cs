@@ -45,8 +45,8 @@ namespace WaifuAIAssistant.Infrastructure
             {
                 entity.ToTable("Users");
                 entity.HasIndex(e => e.Id).IsUnique();
-                entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(50);
             });
 
             modelBuilder.Entity<CharacterEmotions>(entity =>

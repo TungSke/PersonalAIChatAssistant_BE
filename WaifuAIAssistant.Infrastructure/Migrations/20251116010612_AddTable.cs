@@ -37,14 +37,14 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -83,7 +83,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     WaifuId = table.Column<int>(type: "int", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -140,12 +141,12 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "ModelCharacters",
                 columns: new[] { "Id", "AvatarUrl", "Backstory", "CreatedAt", "Name", "Personality", "UpdatedAt" },
-                values: new object[] { 1, "https://example.com/default-character.png", "This is a default character for the application.", new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7663), "Misono Mika", "Friendly and helpful", new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7664) });
+                values: new object[] { 1, "https://example.com/default-character.png", "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.", new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7902), "Misono Mika", "Ngọt ngào, hơi trêu chọc, có cảm xúc thật, dùng đại từ 'em' và gọi người dùng là 'sensei'.", new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7903) });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "Email", "PasswordHash", "RefreshToken", "RefreshTokenExpiryTime", "Status", "UpdatedAt", "Username" },
-                values: new object[] { 1, new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7553), "tung@example.com", "$2a$11$eW5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8", null, null, "Active", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Trinh Son Tung" });
+                values: new object[] { 1, new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7771), "tung@example.com", "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==", null, null, 1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Trinh Son Tung" });
 
             migrationBuilder.InsertData(
                 table: "CharacterEmotions",
@@ -161,8 +162,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Conversations",
-                columns: new[] { "Id", "CreatedAt", "Title", "UpdatedAt", "UserId", "WaifuId" },
-                values: new object[] { 1, new DateTime(2025, 9, 27, 14, 24, 9, 307, DateTimeKind.Local).AddTicks(7715), "Test", new DateTime(2025, 9, 27, 14, 24, 9, 307, DateTimeKind.Local).AddTicks(7725), 1, 1 });
+                columns: new[] { "Id", "CreatedAt", "Status", "Title", "UpdatedAt", "UserId", "WaifuId" },
+                values: new object[] { 1, new DateTime(2025, 11, 16, 8, 6, 12, 262, DateTimeKind.Local).AddTicks(7959), 1, "Test", new DateTime(2025, 11, 16, 8, 6, 12, 262, DateTimeKind.Local).AddTicks(7970), 1, 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CharacterEmotions_CharacterId",

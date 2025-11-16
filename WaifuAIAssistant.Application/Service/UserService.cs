@@ -7,6 +7,7 @@ using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Base;
 using WaifuAIAssistant.Domain.Entities;
+using WaifuAIAssistant.Domain.Enums;
 using WaifuAIAssistant.Domain.Services;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
 using WaifuAIAssistant.Infrastructure.ThirdParty;
@@ -97,7 +98,8 @@ namespace WaifuAIAssistant.Application.Service
                 return new ApiResponse<string>{ Success = false, Message = "Invalid OTP", Errors = new List<string> { "Invalid OTP" } };
             }
 
-            user.Status = "Active";
+            user.Status = UserStatus.Active;
+
             await _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
 

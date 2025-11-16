@@ -70,7 +70,7 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
             // Gọi API AI
             var response = await _model.GenerateContentAsync(new GenerateContentRequest
             {
-                Contents = contents
+                Contents = contents,
             });
 
             var aiReply = response.Text();

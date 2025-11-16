@@ -33,9 +33,9 @@ namespace WaifuAIAssistant.Domain.Base
             _context.Set<T>().RemoveRange(entities);
         }
 
-        public async Task FindAsync(params object[] keyValues)
+        public async Task<T> FindAsync(params object[] keyValues)
         {
-            await _context.Set<T>().FindAsync(keyValues);
+            return await _context.Set<T>().FindAsync(keyValues);
         }
 
         public IQueryable<T> GetAll() => _context.Set<T>();

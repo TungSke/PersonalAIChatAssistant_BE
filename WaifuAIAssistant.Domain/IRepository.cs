@@ -15,7 +15,7 @@ namespace WaifuAIAssistant.Domain
 
         IQueryable<T> GetAll();
 
-        Task FindAsync(params object[] keyValues);
+        Task<T> FindAsync(params object[] keyValues);
 
         Task Remove(T entity);
 

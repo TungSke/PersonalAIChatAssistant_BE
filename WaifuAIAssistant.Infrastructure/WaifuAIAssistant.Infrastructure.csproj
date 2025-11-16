@@ -26,4 +26,8 @@
 		<ProjectReference Include="..\WaifuAIAssistant.Domain\WaifuAIAssistant.Domain.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Migrations\" />
+	</ItemGroup>
+
 </Project>

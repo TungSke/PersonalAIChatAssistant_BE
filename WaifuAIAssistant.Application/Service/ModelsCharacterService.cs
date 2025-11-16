@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
+using WaifuAIAssistant.Application.DTOs.Response;
 using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Base;
@@ -14,24 +16,27 @@ namespace WaifuAIAssistant.Application.Service
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
-        public async Task<ApiResponse<IEnumerable<ModelsCharacter>>> GetAllAsync(int pageIndex, int pageSize, string search)
+        public async Task<ApiResponse<IEnumerable<ModelCharacterResponse>>> GetAllAsync(int pageIndex, int pageSize, string search)
         {
             var list = await _unitOfWork.ModelRepository.GetPagedAsync(pageIndex, pageSize,
                 x => (string.IsNullOrEmpty(search) || x.Name.ToLower().Contains(search))
                 );
-            if (list == null || !list.Any())
+
+            var response = list.Adapt<List<ModelCharacterResponse>>();
+
+            if (response == null || !response.Any())
             {
-                return new ApiResponse<IEnumerable<ModelsCharacter>>
+                return new ApiResponse<IEnumerable<ModelCharacterResponse>>
                 {
                     Success = false,
                     Message = "No models found."
                 };
             }
 
-            return new ApiResponse<IEnumerable<ModelsCharacter>>
+            return new ApiResponse<IEnumerable<ModelCharacterResponse>>
             {
                 Success = true,
-                Data = list
+                Data = response
             };
         }
     }
