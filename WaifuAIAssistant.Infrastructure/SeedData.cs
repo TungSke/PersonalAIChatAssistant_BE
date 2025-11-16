@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using WaifuAIAssistant.Domain.Entities;
+using WaifuAIAssistant.Domain.Enums;
 
 namespace WaifuAIAssistant.Infrastructure
 {
@@ -15,7 +16,7 @@ namespace WaifuAIAssistant.Infrastructure
                     Email = "tung@example.com",
                     PasswordHash = "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==", // Example hashed password
                     Username = "Trinh Son Tung",
-                    Status = "Active",
+                    Status = UserStatus.Active,
                     CreatedAt = DateTime.UtcNow,
                 });
 
@@ -27,8 +28,8 @@ namespace WaifuAIAssistant.Infrastructure
                     Id = 1,
                     Name = "Misono Mika",
                     Backstory = "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.",
-                    AvatarUrl = "https://example.com/default-character.png",
-                    Personality = "Ngọt ngào, hơi trêu chọc, có cảm xúc thật, dùng đại từ 'em' và gọi người dùng là 'sensei'.",
+                    AvatarUrl = "https://res.cloudinary.com/dgf6tqe0l/image/upload/v1763256864/Mika_Icon_nbmmtd.webp",
+                    Personality = "Sweet, a little teasing, has real emotions, uses the pronoun 'you' and calls the user 'sensei'.",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 });
@@ -37,6 +38,14 @@ namespace WaifuAIAssistant.Infrastructure
                 new CharacterEmotions
                 {
                     Id = 1,
+                    EmotionName = "Neutral",
+                    EmotionDescription = "The character is feeling nothing",
+                    EmotionIconUrl = "",
+                    CharacterId = 1,
+                },
+                new CharacterEmotions
+                {
+                    Id = 2,
                     EmotionName = "Happy",
                     EmotionDescription = "The character is feeling happy and cheerful.",
                     EmotionIconUrl = "",
@@ -44,7 +53,7 @@ namespace WaifuAIAssistant.Infrastructure
                 },
                 new CharacterEmotions
                 {
-                    Id = 2,
+                    Id = 3,
                     EmotionName = "Sad",
                     EmotionDescription = "The character is feeling sad",
                     EmotionIconUrl = "",
@@ -52,7 +61,7 @@ namespace WaifuAIAssistant.Infrastructure
                 },
                 new CharacterEmotions
                 {
-                    Id = 3,
+                    Id = 4,
                     EmotionName = "Angry",
                     EmotionDescription = "The character is feeling Angry",
                     EmotionIconUrl = "",
@@ -60,7 +69,7 @@ namespace WaifuAIAssistant.Infrastructure
                 },
                 new CharacterEmotions
                 {
-                    Id = 4,
+                    Id = 5,
                     EmotionName = "Embarasshing",
                     EmotionDescription = "The character is feeling Embarasshing",
                     EmotionIconUrl = "",
@@ -68,9 +77,25 @@ namespace WaifuAIAssistant.Infrastructure
                 },
                 new CharacterEmotions
                 {
-                    Id = 5,
-                    EmotionName = "Hatred",
-                    EmotionDescription = "The character is feeling Hatred",
+                    Id = 6,
+                    EmotionName = "Surprised",
+                    EmotionDescription = "The character is feeling Surprised",
+                    EmotionIconUrl = "",
+                    CharacterId = 1,
+                },
+                new CharacterEmotions
+                {
+                    Id = 7,
+                    EmotionName = "Shocked",
+                    EmotionDescription = "The character is feeling Surprised",
+                    EmotionIconUrl = "",
+                    CharacterId = 1,
+                },
+                new CharacterEmotions
+                {
+                    Id = 8,
+                    EmotionName = "Serious",
+                    EmotionDescription = "The character is feeling Surprised",
                     EmotionIconUrl = "",
                     CharacterId = 1,
                 }
@@ -84,7 +109,8 @@ namespace WaifuAIAssistant.Infrastructure
                     WaifuId = 1,
                     Title = "Test",
                     CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    UpdatedAt = DateTime.Now,
+                    Status = ConversationStatus.Active,
                 }
                 );
         }

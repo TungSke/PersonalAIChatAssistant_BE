@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using WaifuAIAssistant.Domain.Enums;
 
 namespace WaifuAIAssistant.Domain.Entities
 {
@@ -17,7 +18,7 @@ namespace WaifuAIAssistant.Domain.Entities
         public DateTime UpdatedAt { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
-        public string? Status { get; set; } = "InActive";
+        public UserStatus Status { get; set; } = UserStatus.Active;
 
         public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
         public virtual ICollection<Message> Messages { get; set; } = new List<Message>();

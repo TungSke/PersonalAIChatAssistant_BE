@@ -1,4 +1,6 @@
-﻿namespace WaifuAIAssistant.Domain.Entities
+﻿using WaifuAIAssistant.Domain.Enums;
+
+namespace WaifuAIAssistant.Domain.Entities
 {
     public class Conversation
     {
@@ -8,6 +10,7 @@
         public string Title { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public required ConversationStatus Status { get; set; }
 
         public virtual Users User { get; set; } = null!;
         public virtual ModelsCharacter? Waifu { get; set; } = null!;

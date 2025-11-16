@@ -108,6 +108,9 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -136,9 +139,10 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 9, 27, 14, 24, 9, 307, DateTimeKind.Local).AddTicks(7715),
+                            CreatedAt = new DateTime(2025, 11, 16, 8, 6, 12, 262, DateTimeKind.Local).AddTicks(7959),
+                            Status = 1,
                             Title = "Test",
-                            UpdatedAt = new DateTime(2025, 9, 27, 14, 24, 9, 307, DateTimeKind.Local).AddTicks(7725),
+                            UpdatedAt = new DateTime(2025, 11, 16, 8, 6, 12, 262, DateTimeKind.Local).AddTicks(7970),
                             UserId = 1,
                             WaifuId = 1
                         });
@@ -227,11 +231,11 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         {
                             Id = 1,
                             AvatarUrl = "https://example.com/default-character.png",
-                            Backstory = "This is a default character for the application.",
-                            CreatedAt = new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7663),
+                            Backstory = "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.",
+                            CreatedAt = new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7902),
                             Name = "Misono Mika",
-                            Personality = "Friendly and helpful",
-                            UpdatedAt = new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7664)
+                            Personality = "Ngọt ngào, hơi trêu chọc, có cảm xúc thật, dùng đại từ 'em' và gọi người dùng là 'sensei'.",
+                            UpdatedAt = new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7903)
                         });
                 });
 
@@ -248,8 +252,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -261,16 +265,16 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -285,10 +289,10 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 9, 27, 7, 24, 9, 307, DateTimeKind.Utc).AddTicks(7553),
+                            CreatedAt = new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7771),
                             Email = "tung@example.com",
-                            PasswordHash = "$2a$11$eW5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8f5k5j5k5j5uO5z1Z3b1Q8",
-                            Status = "Active",
+                            PasswordHash = "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==",
+                            Status = 1,
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Username = "Trinh Son Tung"
                         });
