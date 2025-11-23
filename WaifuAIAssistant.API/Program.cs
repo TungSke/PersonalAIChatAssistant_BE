@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -85,6 +86,26 @@ builder.Services.AddScoped<IGenerationAIService, GenerationAIService>();
 //    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
 //    options.InstanceName = "tungdeptrairedis";
 //});
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? Environment.GetEnvironmentVariable("DefaultConnection"),
+
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 15,                    // chuẩn doanh nghiệp
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null);
+
+            // 3 option BẮT BUỘC phải có với Azure SQL (rất nhiều người bỏ quên)
+            //sqlOptions.CommandTimeout(60);
+            //sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "dbo");
+            //sqlOptions.ExecutionStrategy(d => new SqlServerRetryingExecutionStrategy(d, 15, TimeSpan.FromSeconds(30), null));
+        })
+    .EnableSensitiveDataLogging(false)
+    .EnableDetailedErrors(false));
 
 var app = builder.Build();
 

@@ -17,7 +17,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.17")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -59,13 +59,21 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         {
                             Id = 1,
                             CharacterId = 1,
+                            EmotionDescription = "The character is feeling nothing",
+                            EmotionIconUrl = "",
+                            EmotionName = "Neutral"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CharacterId = 1,
                             EmotionDescription = "The character is feeling happy and cheerful.",
                             EmotionIconUrl = "",
                             EmotionName = "Happy"
                         },
                         new
                         {
-                            Id = 2,
+                            Id = 3,
                             CharacterId = 1,
                             EmotionDescription = "The character is feeling sad",
                             EmotionIconUrl = "",
@@ -73,7 +81,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 4,
                             CharacterId = 1,
                             EmotionDescription = "The character is feeling Angry",
                             EmotionIconUrl = "",
@@ -81,7 +89,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 5,
                             CharacterId = 1,
                             EmotionDescription = "The character is feeling Embarasshing",
                             EmotionIconUrl = "",
@@ -89,11 +97,27 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 6,
                             CharacterId = 1,
-                            EmotionDescription = "The character is feeling Hatred",
+                            EmotionDescription = "The character is feeling Surprised",
                             EmotionIconUrl = "",
-                            EmotionName = "Hatred"
+                            EmotionName = "Surprised"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CharacterId = 1,
+                            EmotionDescription = "The character is feeling Surprised",
+                            EmotionIconUrl = "",
+                            EmotionName = "Shocked"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CharacterId = 1,
+                            EmotionDescription = "The character is feeling Surprised",
+                            EmotionIconUrl = "",
+                            EmotionName = "Serious"
                         });
                 });
 
@@ -139,10 +163,10 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 16, 8, 6, 12, 262, DateTimeKind.Local).AddTicks(7959),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Status = 1,
                             Title = "Test",
-                            UpdatedAt = new DateTime(2025, 11, 16, 8, 6, 12, 262, DateTimeKind.Local).AddTicks(7970),
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserId = 1,
                             WaifuId = 1
                         });
@@ -230,12 +254,12 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            AvatarUrl = "https://example.com/default-character.png",
+                            AvatarUrl = "https://res.cloudinary.com/dgf6tqe0l/image/upload/v1763256864/Mika_Icon_nbmmtd.webp",
                             Backstory = "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.",
-                            CreatedAt = new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7902),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Misono Mika",
-                            Personality = "Ngọt ngào, hơi trêu chọc, có cảm xúc thật, dùng đại từ 'em' và gọi người dùng là 'sensei'.",
-                            UpdatedAt = new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7903)
+                            Personality = "Sweet, a little teasing, has real emotions, uses the pronoun 'you' and calls the user 'sensei'.",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 
@@ -289,7 +313,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7771),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "tung@example.com",
                             PasswordHash = "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==",
                             Status = 1,

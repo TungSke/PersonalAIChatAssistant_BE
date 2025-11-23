@@ -141,29 +141,32 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "ModelCharacters",
                 columns: new[] { "Id", "AvatarUrl", "Backstory", "CreatedAt", "Name", "Personality", "UpdatedAt" },
-                values: new object[] { 1, "https://example.com/default-character.png", "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.", new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7902), "Misono Mika", "Ngọt ngào, hơi trêu chọc, có cảm xúc thật, dùng đại từ 'em' và gọi người dùng là 'sensei'.", new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7903) });
+                values: new object[] { 1, "https://res.cloudinary.com/dgf6tqe0l/image/upload/v1763256864/Mika_Icon_nbmmtd.webp", "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Misono Mika", "Sweet, a little teasing, has real emotions, uses the pronoun 'you' and calls the user 'sensei'.", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "Email", "PasswordHash", "RefreshToken", "RefreshTokenExpiryTime", "Status", "UpdatedAt", "Username" },
-                values: new object[] { 1, new DateTime(2025, 11, 16, 1, 6, 12, 262, DateTimeKind.Utc).AddTicks(7771), "tung@example.com", "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==", null, null, 1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Trinh Son Tung" });
+                values: new object[] { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "tung@example.com", "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==", null, null, 1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Trinh Son Tung" });
 
             migrationBuilder.InsertData(
                 table: "CharacterEmotions",
                 columns: new[] { "Id", "CharacterId", "EmotionDescription", "EmotionIconUrl", "EmotionName" },
                 values: new object[,]
                 {
-                    { 1, 1, "The character is feeling happy and cheerful.", "", "Happy" },
-                    { 2, 1, "The character is feeling sad", "", "Sad" },
-                    { 3, 1, "The character is feeling Angry", "", "Angry" },
-                    { 4, 1, "The character is feeling Embarasshing", "", "Embarasshing" },
-                    { 5, 1, "The character is feeling Hatred", "", "Hatred" }
+                    { 1, 1, "The character is feeling nothing", "", "Neutral" },
+                    { 2, 1, "The character is feeling happy and cheerful.", "", "Happy" },
+                    { 3, 1, "The character is feeling sad", "", "Sad" },
+                    { 4, 1, "The character is feeling Angry", "", "Angry" },
+                    { 5, 1, "The character is feeling Embarasshing", "", "Embarasshing" },
+                    { 6, 1, "The character is feeling Surprised", "", "Surprised" },
+                    { 7, 1, "The character is feeling Surprised", "", "Shocked" },
+                    { 8, 1, "The character is feeling Surprised", "", "Serious" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Conversations",
                 columns: new[] { "Id", "CreatedAt", "Status", "Title", "UpdatedAt", "UserId", "WaifuId" },
-                values: new object[] { 1, new DateTime(2025, 11, 16, 8, 6, 12, 262, DateTimeKind.Local).AddTicks(7959), 1, "Test", new DateTime(2025, 11, 16, 8, 6, 12, 262, DateTimeKind.Local).AddTicks(7970), 1, 1 });
+                values: new object[] { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "Test", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CharacterEmotions_CharacterId",

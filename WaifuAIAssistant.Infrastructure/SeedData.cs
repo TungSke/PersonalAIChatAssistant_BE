@@ -17,7 +17,7 @@ namespace WaifuAIAssistant.Infrastructure
                     PasswordHash = "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==", // Example hashed password
                     Username = "Trinh Son Tung",
                     Status = UserStatus.Active,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = new DateTime(2024, 1, 1),
                 });
 
 
@@ -30,8 +30,8 @@ namespace WaifuAIAssistant.Infrastructure
                     Backstory = "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.",
                     AvatarUrl = "https://res.cloudinary.com/dgf6tqe0l/image/upload/v1763256864/Mika_Icon_nbmmtd.webp",
                     Personality = "Sweet, a little teasing, has real emotions, uses the pronoun 'you' and calls the user 'sensei'.",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2024, 1, 1),
+                    UpdatedAt = new DateTime(2024, 1, 1)
                 });
 
             modelBuilder.Entity<CharacterEmotions>().HasData(
@@ -108,8 +108,8 @@ namespace WaifuAIAssistant.Infrastructure
                     UserId = 1,
                     WaifuId = 1,
                     Title = "Test",
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
+                    CreatedAt = new DateTime(2024, 1, 1),
+                    UpdatedAt = new DateTime(2024, 1, 1),
                     Status = ConversationStatus.Active,
                 }
                 );
