@@ -116,5 +116,40 @@ namespace WaifuAIAssistant.Application.Service
             }
         }
 
+        public async Task<ApiResponse<string>> DelereMessage(int messageId)
+        {
+            try
+            {
+                var userId = await _jwtService.GetUserId();
+                var messageExisted = await _unitOfWork.MessageRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Id == messageId && x.UserId == userId);
+                if (messageExisted == null)
+                {
+                    return new ApiResponse<string>
+                    {
+                        Success = false,
+                        Message = "Message not found"
+                    };
+                }
+                await _unitOfWork.MessageRepository.Remove(messageExisted);
+                await _unitOfWork.SaveChangesAsync();
+                return new ApiResponse<string>
+                {
+                    Success = true,
+                    Message = "Delete success!"
+                };
+            }
+            catch (Exception e)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = e.Message,
+                    Data = e.InnerException?.ToString()
+                };
+            }
+        }
+
     }
 }

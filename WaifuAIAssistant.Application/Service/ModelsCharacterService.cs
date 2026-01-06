@@ -39,5 +39,7 @@ namespace WaifuAIAssistant.Application.Service
                 Data = response
             };
         }
+
+        
     }
 }

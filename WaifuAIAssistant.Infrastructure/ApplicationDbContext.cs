@@ -18,25 +18,6 @@ namespace WaifuAIAssistant.Infrastructure
         public DbSet<Message> Message { get; set; }
         public DbSet<CharacterEmotions> CharacterEmotions { get; set; }
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-        //        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-        //        //Console.WriteLine($"Using environment: {environment}");
-        //        var config = new ConfigurationBuilder()
-        //           .SetBasePath(Directory.GetCurrentDirectory())
-        //            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-        //            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
-        //            //.AddEnvironmentVariables()
-        //            .Build();
-
-        //        string connectionString = config.GetConnectionString("DefaultConnection");
-        //        //Console.WriteLine($"Using connection string: {connectionString}");
-        //        optionsBuilder.UseSqlServer(connectionString);
-        //    }
-        //}
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

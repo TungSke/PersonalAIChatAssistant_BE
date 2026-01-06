@@ -1,4 +1,5 @@
-﻿using WaifuAIAssistant.Application.DTOs.Response;
+﻿using WaifuAIAssistant.Application.DTOs.Request;
+using WaifuAIAssistant.Application.DTOs.Response;
 using WaifuAIAssistant.Domain.Base;
 using WaifuAIAssistant.Service.DTOs.Request;
 using WaifuAIAssistant.Service.DTOs.Response;
@@ -10,5 +11,7 @@ namespace WaifuAIAssistant.Application.Interfaces
         Task<ApiResponse<RegisterResponse>> Register(RegisterRequest request);
 
         Task<ApiResponse<LoginResponse>> Login(LoginRequest request);
+
+        Task<ApiResponse<string>> VerifyAccount(VerifyAccountRequest request);
     }
 }

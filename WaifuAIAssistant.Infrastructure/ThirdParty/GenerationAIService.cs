@@ -8,6 +8,10 @@ using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
 namespace WaifuAIAssistant.Infrastructure.ThirdParty
 {
+    // manage AI Prompt and response from Generative AI 
+    // using Google Gemini API
+    // https://learn.microsoft.com/en-us/dotnet/api/generativeai.googleai?view=generativeai-dotnet-preview
+    // The performance of this service can be improved by caching the conversation context
     public class GenerationAIService : IGenerationAIService
     {
         private readonly IConfiguration _configuration;

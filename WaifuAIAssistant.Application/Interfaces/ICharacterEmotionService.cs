@@ -10,6 +10,8 @@ namespace WaifuAIAssistant.Application.Interfaces
 {
     public interface ICharacterEmotionService
     {
+        Task<ApiResponse<List<string>>> GetAllDataEmotion();
+
         Task<ApiResponse<List<CharacterEmotions>>> GetCharacterEmotion(int characterid);
     }
 }

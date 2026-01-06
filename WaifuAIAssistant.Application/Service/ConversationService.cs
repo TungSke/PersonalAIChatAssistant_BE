@@ -44,7 +44,11 @@ namespace WaifuAIAssistant.Application.Service
             {
                 var userId = await _jwtService.GetUserId();
                 var createCon = request.Adapt<Conversation>();
-                createCon.UserId = userId;
+
+                var waifuName = await _unitOfWork.ModelRepository.FindAsync(request.WaifuId);
+
+                createCon.Title = string.IsNullOrEmpty(request.Title) ? waifuName.Name : request.Title;
+
                 await _unitOfWork.ConversationRepository.AddAsync(createCon);
                 await _unitOfWork.SaveChangesAsync();
             }

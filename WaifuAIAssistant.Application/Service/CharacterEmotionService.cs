@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Base;
 using WaifuAIAssistant.Domain.Entities;
+using WaifuAIAssistant.Domain.Enums;
 
 namespace WaifuAIAssistant.Application.Service
 {
@@ -17,6 +19,16 @@ namespace WaifuAIAssistant.Application.Service
         public CharacterEmotionService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+        }
+
+        public async Task<ApiResponse<List<string>>> GetAllDataEmotion()
+        {
+            var list = Enum.GetNames(typeof(EmotionName));
+            return new ApiResponse<List<string>>
+            {
+                Success = true,
+                Data = list.ToList()
+            };
         }
 
         public async Task<ApiResponse<List<CharacterEmotions>>> GetCharacterEmotion(int characterid)

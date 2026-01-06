@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using WaifuAIAssistant.API;
 using WaifuAIAssistant.API.Middleware;
 using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Application.Service;
@@ -17,11 +20,14 @@ using WaifuAIAssistant.Infrastructure.ThirdParty;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(opts =>
+    opts.Conventions.Add(new RouteTokenTransformerConvention(new ToKebabParameterTransformer()))) // make URL become kebab case
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.KebabCaseLower; //make all json formats become kebab case
     });
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -42,7 +48,8 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("bearer", document)] = []
-    });
+    }); // add bearer token support
+    options.EnableAnnotations(); // enable swagger annotations
 });
 
 
@@ -95,7 +102,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         sqlServerOptionsAction: sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 15,                    // chuẩn doanh nghiệp
+                maxRetryCount: 15,
                 maxRetryDelay: TimeSpan.FromSeconds(30),
                 errorNumbersToAdd: null);
 
@@ -106,6 +113,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         })
     .EnableSensitiveDataLogging(false)
     .EnableDetailedErrors(false));
+
 
 var app = builder.Build();
 
