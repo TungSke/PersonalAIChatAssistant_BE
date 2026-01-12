@@ -17,12 +17,14 @@ namespace WaifuAIAssistant.Application.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtService _jwtService;
         private readonly IGenerationAIService _generationAIService;
+        private readonly IRedisCacheService _redisCacheService;
 
-        public MessageService(IUnitOfWork unitOfWork, IJwtService jwtService, IGenerationAIService generationAIService)
+        public MessageService(IUnitOfWork unitOfWork, IJwtService jwtService, IGenerationAIService generationAIService, IRedisCacheService redisCacheService)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
             _generationAIService = generationAIService;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<ApiResponse<List<MessageResponse>>> GetMessagesFromConversation(int conversationId)

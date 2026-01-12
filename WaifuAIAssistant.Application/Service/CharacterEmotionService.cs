@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
@@ -35,10 +36,17 @@ namespace WaifuAIAssistant.Application.Service
         {
             var list = await _unitOfWork.CharacterEmotionsRepository.GetAll().Where(x => x.CharacterId == characterid).ToListAsync();
 
+            if(list == null || list.Count == 0)
+            {
+                throw new KeyNotFoundException("No emotions found for the specified character.");
+            }
+
+            var response = list.Adapt<List<CharacterEmotions>>();
+
             return new ApiResponse<List<CharacterEmotions>>
             {
                 Success = true,
-                Data = list
+                Data = response
             };
         }
     }

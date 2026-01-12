@@ -22,16 +22,12 @@ namespace WaifuAIAssistant.Application.Service
                 x => (string.IsNullOrEmpty(search) || x.Name.ToLower().Contains(search))
                 );
 
-            var response = list.Adapt<List<ModelCharacterResponse>>();
-
-            if (response == null || !response.Any())
+            if(list == null)
             {
-                return new ApiResponse<IEnumerable<ModelCharacterResponse>>
-                {
-                    Success = false,
-                    Message = "No models found."
-                };
+                throw new KeyNotFoundException("No model characters found.");
             }
+
+            var response = list.Adapt<List<ModelCharacterResponse>>();
 
             return new ApiResponse<IEnumerable<ModelCharacterResponse>>
             {

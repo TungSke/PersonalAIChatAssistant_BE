@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -72,28 +72,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 
-builder.Services.AddScoped<ApplicationDbContext>();
-builder.Services.AddScoped<IPasswordHandlerService, PasswordHandlerService>();
-builder.Services.AddScoped<IJwtService, JWTService>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<GoogleService>();
-builder.Services.AddScoped<IMemoryCache, MemoryCache>();
-builder.Services.AddScoped<IConversationService, ConversationService>();
-builder.Services.AddScoped<IModelsCharacterService, ModelsCharacterService>();
-builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
-builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddScoped<IGenerationAIService, GenerationAIService>();
-//builder.Services.AddScoped<ICacheService, RedisCacheService>();
-
-
-//add redis cache service
-//builder.Services.AddStackExchangeRedisCache(options =>
-//{
-//    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-//    options.InstanceName = "tungdeptrairedis";
-//});
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
@@ -113,6 +91,32 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         })
     .EnableSensitiveDataLogging(false)
     .EnableDetailedErrors(false));
+
+//add redis cache service
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var connectionString =
+        config.GetConnectionString("RedisConnection");
+
+    return ConnectionMultiplexer.Connect(connectionString);
+});
+
+
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddScoped<ApplicationDbContext>();
+builder.Services.AddScoped<IPasswordHandlerService, PasswordHandlerService>();
+builder.Services.AddScoped<IJwtService, JWTService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<GoogleService>();
+builder.Services.AddScoped<IMemoryCache, MemoryCache>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IModelsCharacterService, ModelsCharacterService>();
+builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IGenerationAIService, GenerationAIService>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
 
 var app = builder.Build();

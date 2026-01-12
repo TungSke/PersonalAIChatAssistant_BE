@@ -1,38 +1,35 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using System.Text.Json;
+﻿using Newtonsoft.Json;
+using StackExchange.Redis;
+using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
 namespace WaifuAIAssistant.Infrastructure.ThirdParty
 {
-    public class RedisCacheService
+    public class RedisCacheService : IRedisCacheService
     {
-        private readonly IDistributedCache _cache;
-        private readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        private readonly IDatabase _db;
 
-        public RedisCacheService(IDistributedCache cache)
+        public RedisCacheService(IConnectionMultiplexer redis)
         {
-            _cache = cache;
+            _db = redis.GetDatabase();
+        }
+
+        public async Task SetAsync<T>(string key, T value, TimeSpan ttl)
+        {
+            var json = JsonConvert.SerializeObject(value);
+            await _db.StringSetAsync(key, json, ttl);
         }
 
         public async Task<T?> GetAsync<T>(string key)
         {
-            var value = await _cache.GetStringAsync(key);
-            return value is null ? default : JsonSerializer.Deserialize<T>(value, _options);
-        }
-
-        public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
-        {
-            var serialized = JsonSerializer.Serialize(value, _options);
-            var opts = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromMinutes(30)
-            };
-            await _cache.SetStringAsync(key, serialized, opts);
+            var json = await _db.StringGetAsync(key);
+            return json.IsNullOrEmpty
+                ? default
+                : JsonConvert.DeserializeObject<T>(json);
         }
 
         public async Task RemoveAsync(string key)
         {
-            await _cache.RemoveAsync(key);
+            await _db.KeyDeleteAsync(key);
         }
     }
-
 }

@@ -28,6 +28,11 @@ namespace WaifuAIAssistant.Application.Service
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
 
+            if(conversations == null || conversations.Count == 0)
+            {
+                throw new KeyNotFoundException("No conversations found for the user.");
+            }
+
             var response = conversations.Adapt<List<ConversationResponse>>();
 
             return new ApiResponse<List<ConversationResponse>>

@@ -110,25 +110,11 @@ namespace WaifuAIAssistant.Application.Service
         public async Task<ApiResponse<LoginResponse>> Login(LoginRequest request)
         {
             var user = await findUserByEmail(request.Email);
-            if (user == null)
-            {
-                return new ApiResponse<LoginResponse>
-                {
-                    Success = false,
-                    Message = "Invalid email or password",
-                    Errors = new List<string> { "Invalid email or password" }
-                };
-            }
 
             var passwordVerificationResult = _passwordHandlerService.VerifyPassword(user.PasswordHash, request.Password);
             if (passwordVerificationResult != PasswordVerificationResult.Success)
             {
-                return new ApiResponse<LoginResponse>
-                {
-                    Success = false,
-                    Message = "Invalid email or password",
-                    Errors = new List<string> { "Invalid email or password" }
-                };
+                throw new UnauthorizedAccessException("Invalid credentials");
             }
 
             user.RefreshToken = await _jWTService.GenerateRefreshToken();

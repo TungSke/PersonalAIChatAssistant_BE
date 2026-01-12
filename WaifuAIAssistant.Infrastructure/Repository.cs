@@ -38,7 +38,7 @@ namespace WaifuAIAssistant.Domain.Base
             return await _context.Set<T>().FindAsync(keyValues);
         }
 
-        public IQueryable<T> GetAll() => _context.Set<T>();
+        public IQueryable<T> GetAll() => _context.Set<T>().AsQueryable();
 
         public async Task Update(T entity)
         {
