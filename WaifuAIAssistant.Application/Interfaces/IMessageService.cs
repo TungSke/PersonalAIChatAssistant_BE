@@ -6,7 +6,7 @@ namespace WaifuAIAssistant.Application.Interfaces
 {
     public interface IMessageService
     {
-        Task<ApiResponse<List<MessageResponse>>> GetMessagesFromConversation(int conversationId);
+        Task<ApiResponse<List<MessageResponse>>> GetMessagesFromConversation(int conversationId, int limit = 30, long? beforeMessageId = null);
         Task<ApiResponse<string>> CreateMessage(MessageRequest request);
         Task<ApiResponse<string>> DeleteMessage(int messageId);
     }

@@ -14,15 +14,32 @@ namespace WaifuAIAssistant.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtService _jwtService;
-        public ConversationService(IUnitOfWork unitOfWork, IJwtService jwtService)
+        private readonly IRedisCacheService _redisCacheService;
+        public ConversationService(IUnitOfWork unitOfWork, IJwtService jwtService, IRedisCacheService redisCacheService)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<ApiResponse<List<ConversationResponse>>> GetConversationAsync()
         {
             var userId = await _jwtService.GetUserId();
+
+            if(userId != 0)
+            {
+                var cacheKey = $"conversations_user_{userId}";
+                var cachedConversations = await _redisCacheService.GetAsync<List<ConversationResponse>>(cacheKey);
+                if (cachedConversations != null)
+                {
+                    return new ApiResponse<List<ConversationResponse>>
+                    {
+                        Success = true,
+                        Message = "Conversations retrieved successfully from cache",
+                        Data = cachedConversations,
+                    };
+                }
+            }
 
             var conversations = await _unitOfWork.ConversationRepository.GetAll()
                 .Where(x => x.UserId == userId)
@@ -34,6 +51,11 @@ namespace WaifuAIAssistant.Application.Service
             }
 
             var response = conversations.Adapt<List<ConversationResponse>>();
+            if(userId != 0)
+            {
+                var cacheKey = $"conversations_user_{userId}";
+                await _redisCacheService.SetAsync(cacheKey, response, TimeSpan.FromMinutes(30));
+            }
 
             return new ApiResponse<List<ConversationResponse>>
             {

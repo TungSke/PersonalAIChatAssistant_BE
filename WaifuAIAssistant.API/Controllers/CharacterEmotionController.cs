@@ -20,7 +20,7 @@ namespace WaifuAIAssistant.API.Controllers
         [SwaggerOperation(
         Summary = "Get all character emotion need when create"
         )]
-        [HttpGet("GetCharacterEmotion")]
+        [HttpGet("get-character-emotions")]
         public async Task<IActionResult> GetAllDataEmotion()
         {
             var result = await _characterEmotionService.GetAllDataEmotion();

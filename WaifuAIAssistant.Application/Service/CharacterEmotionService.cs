@@ -6,20 +6,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WaifuAIAssistant.Application.DTOs.Response;
 using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Base;
 using WaifuAIAssistant.Domain.Entities;
 using WaifuAIAssistant.Domain.Enums;
+using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
 namespace WaifuAIAssistant.Application.Service
 {
     public class CharacterEmotionService : ICharacterEmotionService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public CharacterEmotionService(IUnitOfWork unitOfWork)
+        private readonly IRedisCacheService _redisCacheService;
+        public CharacterEmotionService(IUnitOfWork unitOfWork, IRedisCacheService redisCacheService)
         {
             _unitOfWork = unitOfWork;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<ApiResponse<List<string>>> GetAllDataEmotion()
@@ -32,8 +36,19 @@ namespace WaifuAIAssistant.Application.Service
             };
         }
 
-        public async Task<ApiResponse<List<CharacterEmotion>>> GetCharacterEmotion(int characterid)
+        public async Task<ApiResponse<List<CharacterEmotionResponse>>> GetCharacterEmotion(int characterid)
         {
+            var cacheKey = $"character_emotions_{characterid}";
+            var cacheCharacterEmotions = await _redisCacheService.GetAsync<List<CharacterEmotionResponse>>(cacheKey);
+            if (cacheCharacterEmotions != null)
+            {
+                return new ApiResponse<List<CharacterEmotionResponse>>
+                {
+                    Success = true,
+                    Data = cacheCharacterEmotions
+                };
+            }
+
             var list = await _unitOfWork.CharacterEmotionsRepository.GetAll().Where(x => x.CharacterId == characterid).ToListAsync();
 
             if(list == null || list.Count == 0)
@@ -41,9 +56,9 @@ namespace WaifuAIAssistant.Application.Service
                 throw new KeyNotFoundException("No emotions found for the specified character.");
             }
 
-            var response = list.Adapt<List<CharacterEmotion>>();
+            var response = list.Adapt<List<CharacterEmotionResponse>>();
 
-            return new ApiResponse<List<CharacterEmotion>>
+            return new ApiResponse<List<CharacterEmotionResponse>>
             {
                 Success = true,
                 Data = response

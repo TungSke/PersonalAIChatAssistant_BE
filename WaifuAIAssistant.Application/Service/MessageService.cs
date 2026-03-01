@@ -27,17 +27,63 @@ namespace WaifuAIAssistant.Application.Service
             _redisCacheService = redisCacheService;
         }
 
-        public async Task<ApiResponse<List<MessageResponse>>> GetMessagesFromConversation(int conversationId)
+        public async Task<ApiResponse<List<MessageResponse>>> GetMessagesFromConversation(int conversationId, int limit = 30,long? beforeMessageId = null)
         {
             var userId = await _jwtService.GetUserId();
-            var list = await _unitOfWork.MessageRepository.GetAll().Where(x => x.ConversationId == conversationId).ToListAsync();
-            var response = list.Adapt<List<MessageResponse>>();
+
+            // only cache latest messages
+            var cacheKey = $"chat:{conversationId}:latest";
+
+            if (beforeMessageId == null)
+            {
+                var cached = await _redisCacheService
+                    .GetAsync<List<MessageResponse>>(cacheKey);
+
+                if (cached != null)
+                {
+                    return new ApiResponse<List<MessageResponse>>
+                    {
+                        Success = true,
+                        Data = cached
+                    };
+                }
+            }
+
+            var query = _unitOfWork.MessageRepository
+                .GetAll()
+                .Where(x => x.ConversationId == conversationId);
+
+            if (beforeMessageId != null)
+            {
+                query = query.Where(x => x.Id < beforeMessageId);
+            }
+
+            var messages = await query
+                .OrderByDescending(x => x.Id)
+                .Take(limit)
+                .ToListAsync();
+
+            var response = messages
+                .OrderBy(x => x.Id)
+                .Adapt<List<MessageResponse>>();
+
+            // 👉 cache chỉ khi là load lần đầu
+            if (beforeMessageId == null)
+            {
+                await _redisCacheService.SetAsync(
+                    cacheKey,
+                    response,
+                    TimeSpan.FromSeconds(30)
+                );
+            }
+
             return new ApiResponse<List<MessageResponse>>
             {
                 Success = true,
                 Data = response
             };
         }
+
 
         public async Task<ApiResponse<string>> CreateMessage(MessageRequest request)
         {
