@@ -1,10 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace WaifuAIAssistant.Domain.Entities
+﻿namespace WaifuAIAssistant.Domain.Entities
 {
-    public class CharacterEmotions
+    public class CharacterEmotion
     {
-        
         public int Id { get; set; }
         public string EmotionName { get; set; } = string.Empty;
         public string EmotionDescription { get; set; } = string.Empty;

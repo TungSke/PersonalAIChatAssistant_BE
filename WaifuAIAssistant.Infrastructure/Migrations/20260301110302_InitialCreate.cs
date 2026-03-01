@@ -8,13 +8,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WaifuAIAssistant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTable : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ModelCharacters",
+                name: "ModelsCharacters",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -28,7 +28,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ModelCharacters", x => x.Id);
+                    table.PrimaryKey("PK_ModelsCharacters", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -66,15 +66,15 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_CharacterEmotions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CharacterEmotions_ModelCharacters_CharacterId",
+                        name: "FK_CharacterEmotions_ModelsCharacters_CharacterId",
                         column: x => x.CharacterId,
-                        principalTable: "ModelCharacters",
+                        principalTable: "ModelsCharacters",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Conversations",
+                name: "Conversation",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -82,20 +82,22 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     WaifuId = table.Column<int>(type: "int", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Summary = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SummaryAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Conversations", x => x.Id);
+                    table.PrimaryKey("PK_Conversation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Conversations_ModelCharacters_WaifuId",
+                        name: "FK_Conversation_ModelsCharacters_WaifuId",
                         column: x => x.WaifuId,
-                        principalTable: "ModelCharacters",
+                        principalTable: "ModelsCharacters",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Conversations_Users_UserId",
+                        name: "FK_Conversation_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -119,15 +121,15 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Messages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Messages_Conversations_ConversationId",
+                        name: "FK_Messages_Conversation_ConversationId",
                         column: x => x.ConversationId,
-                        principalTable: "Conversations",
+                        principalTable: "Conversation",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Messages_ModelCharacters_ModelCharacterId",
+                        name: "FK_Messages_ModelsCharacters_ModelCharacterId",
                         column: x => x.ModelCharacterId,
-                        principalTable: "ModelCharacters",
+                        principalTable: "ModelsCharacters",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -139,7 +141,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "ModelCharacters",
+                table: "ModelsCharacters",
                 columns: new[] { "Id", "AvatarUrl", "Backstory", "CreatedAt", "Name", "Personality", "UpdatedAt" },
                 values: new object[] { 1, "https://res.cloudinary.com/dgf6tqe0l/image/upload/v1763256864/Mika_Icon_nbmmtd.webp", "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Misono Mika", "Sweet, a little teasing, has real emotions, uses the pronoun 'you' and calls the user 'sensei'.", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) });
 
@@ -164,9 +166,9 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Conversations",
-                columns: new[] { "Id", "CreatedAt", "Status", "Title", "UpdatedAt", "UserId", "WaifuId" },
-                values: new object[] { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "Test", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 1 });
+                table: "Conversation",
+                columns: new[] { "Id", "Status", "Summary", "Title", "UserId", "WaifuId" },
+                values: new object[] { 1, 1, "", "Test", 1, 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CharacterEmotions_CharacterId",
@@ -180,19 +182,19 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Conversations_Id",
-                table: "Conversations",
+                name: "IX_Conversation_Id",
+                table: "Conversation",
                 column: "Id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Conversations_UserId",
-                table: "Conversations",
+                name: "IX_Conversation_UserId",
+                table: "Conversation",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Conversations_WaifuId",
-                table: "Conversations",
+                name: "IX_Conversation_WaifuId",
+                table: "Conversation",
                 column: "WaifuId");
 
             migrationBuilder.CreateIndex(
@@ -217,8 +219,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ModelCharacters_Id",
-                table: "ModelCharacters",
+                name: "IX_ModelsCharacters_Id",
+                table: "ModelsCharacters",
                 column: "Id",
                 unique: true);
 
@@ -244,10 +246,10 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Conversations");
+                name: "Conversation");
 
             migrationBuilder.DropTable(
-                name: "ModelCharacters");
+                name: "ModelsCharacters");
 
             migrationBuilder.DropTable(
                 name: "Users");

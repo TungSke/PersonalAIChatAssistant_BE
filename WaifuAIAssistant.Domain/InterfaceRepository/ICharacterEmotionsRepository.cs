@@ -2,7 +2,7 @@
 
 namespace WaifuAIAssistant.Domain.InterfaceRepository
 {
-    public interface ICharacterEmotionsRepository : IRepository<CharacterEmotions>
+    public interface ICharacterEmotionsRepository : IRepository<CharacterEmotion>
     {
     }
 }

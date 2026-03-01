@@ -23,7 +23,7 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<string> GenerateJwtToken(Users user)
+        public async Task<string> GenerateJwtToken(User user)
         {
             var claims = new[]
             {

@@ -41,84 +41,100 @@ namespace WaifuAIAssistant.Application.Service
 
         public async Task<ApiResponse<string>> CreateMessage(MessageRequest request)
         {
-            try
-            {
-                var userId = await _jwtService.GetUserId();
+            var userId = await _jwtService.GetUserId();
 
-                var conversationExisted = await _unitOfWork.ConversationRepository
-                    .GetAll()
-                    .FirstOrDefaultAsync(x => x.Id == request.ConversationId);
+            var conversation = await _unitOfWork.ConversationRepository
+                .GetAll()
+                .FirstOrDefaultAsync(x => x.Id == request.ConversationId);
 
-                if (conversationExisted == null)
-                {
-                    return new ApiResponse<string>
-                    {
-                        Success = false,
-                        Message = "Conversation not found"
-                    };
-                }
-
-
-                var userMessage = new Message
-                {
-                    ConversationId = conversationExisted.Id,
-                    UserId = userId,
-                    ModelCharacterId = null,
-                    Content = request.Content,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                await _unitOfWork.MessageRepository.AddAsync(userMessage);
-                await _unitOfWork.SaveChangesAsync();
-
-                var modelCharacter = await _unitOfWork.ModelRepository
-                    .GetAll()
-                    .FirstOrDefaultAsync(x => x.Id == conversationExisted.WaifuId);
-
-                string aiResponse = string.Empty;
-                if (modelCharacter != null)
-                {
-                    aiResponse = await _generationAIService.Response(
-                        conversationExisted,
-                        modelCharacter,
-                        request.Content,
-                        userId
-                    );
-
-                    var aiMessage = new Message
-                    {
-                        ConversationId = conversationExisted.Id,
-                        UserId = null,
-                        ModelCharacterId = modelCharacter.Id,
-                        Content = aiResponse,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
-
-                    await _unitOfWork.MessageRepository.AddAsync(aiMessage);
-                    await _unitOfWork.SaveChangesAsync();
-                }
-
-                return new ApiResponse<string>
-                {
-                    Success = true,
-                    Message = "Create success!",
-                    Data = aiResponse
-                };
-            }
-            catch (Exception e)
-            {
+            if (conversation == null)
                 return new ApiResponse<string>
                 {
                     Success = false,
-                    Message = e.Message,
-                    Data = e.InnerException?.ToString()
+                    Message = "Conversation not found"
                 };
+
+            // 1️⃣ Save user message
+            var userMessage = new Message
+            {
+                ConversationId = conversation.Id,
+                UserId = userId,
+                Content = request.Content,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.MessageRepository.AddAsync(userMessage);
+            await _unitOfWork.SaveChangesAsync();
+
+            // 2️⃣ Load character
+            var character = await _unitOfWork.ModelRepository
+                .GetAll()
+                .FirstOrDefaultAsync(x => x.Id == conversation.WaifuId);
+
+            if (character == null)
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Conversation not found"
+                };
+
+            // Get last 20 messages
+            var recentMessages = await _unitOfWork.MessageRepository
+                .GetAll()
+                .Where(x => x.ConversationId == conversation.Id)
+                .OrderByDescending(x => x.Id)
+                .Take(20)
+                .OrderBy(x => x.Id)
+                .ToListAsync();
+
+            //Generate AI reply
+            var aiReply = await _generationAIService.GenerateReply(
+                conversation,
+                character,
+                recentMessages,
+                request.Content
+            );
+
+            // Save AI message
+            var aiMessage = new Message
+            {
+                ConversationId = conversation.Id,
+                ModelCharacterId = character.Id,
+                Content = aiReply,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.MessageRepository.AddAsync(aiMessage);
+            await _unitOfWork.SaveChangesAsync();
+
+            //Update summary 
+            var messageCount = await _unitOfWork.MessageRepository
+                                    .GetAll()
+                                    .CountAsync(x => x.ConversationId == conversation.Id);
+
+            if (messageCount % 20 == 0)
+            {
+                
+
+                var newSummary = await _generationAIService.SummarizeConversation(
+                    conversation.Summary,
+                    recentMessages
+                );
+
+                conversation.Summary = newSummary;
+
+                await _unitOfWork.ConversationRepository.Update(conversation);
+                await _unitOfWork.SaveChangesAsync();
             }
+
+            return new ApiResponse<string>
+            {
+                Success = false,
+                Message = aiReply
+            };
         }
 
-        public async Task<ApiResponse<string>> DelereMessage(int messageId)
+        public async Task<ApiResponse<string>> DeleteMessage(int messageId)
         {
             try
             {

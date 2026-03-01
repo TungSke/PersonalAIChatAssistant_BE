@@ -1,6 +1,5 @@
 ﻿using GenerativeAI;
 using GenerativeAI.Types;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Entities;
@@ -8,79 +7,136 @@ using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
 namespace WaifuAIAssistant.Infrastructure.ThirdParty
 {
-    // manage AI Prompt and response from Generative AI 
-    // using Google Gemini API
-    // https://learn.microsoft.com/en-us/dotnet/api/generativeai.googleai?view=generativeai-dotnet-preview
-    // The performance of this service can be improved by caching the conversation context
+    // Responsible ONLY for AI prompt & response
     public class GenerationAIService : IGenerationAIService
     {
-        private readonly IConfiguration _configuration;
         private readonly GenerativeModel _model;
-        private readonly IUnitOfWork _unitOfWork;
 
-        public GenerationAIService(IConfiguration configuration, IUnitOfWork unitOfWork)
+        public GenerationAIService(IConfiguration configuration)
         {
-            _configuration = configuration;
-            _unitOfWork = unitOfWork;
+            var google = new GoogleAi(configuration["GenerativeAI:AIAPIKey"]);
 
-            var google = new GoogleAi(_configuration["GenerativeAI:AIAPIKey"]);
-            _model = google.CreateGenerativeModel("models/gemini-2.0-flash");
+            _model = google.CreateGenerativeModel(
+                modelName: "models/gemini-3-flash-preview",
+                config: new GenerationConfig
+                {
+                    Temperature = 0.8f,
+                    TopP = 0.95f,
+                    MaxOutputTokens = 500
+                }
+            );
         }
 
-        public async Task<string> Response(Conversation conversation, ModelsCharacter modelsCharacter, string newUserMessage, int userId)
+        public async Task<string> GenerateReply(
+            Conversation conversation,
+            ModelsCharacter character,
+            List<Message> recentMessages,
+            string newUserMessage
+        )
         {
-
             if (conversation == null)
-                throw new Exception("Conversation not found");
+                throw new ArgumentNullException(nameof(conversation));
 
-            _model.SystemInstruction = $@"
-                You are now acting as the character: {modelsCharacter.Name}.
+            if (character == null)
+                throw new ArgumentNullException(nameof(character));
 
-                Personality:
-                {modelsCharacter.Personality}
+            _model.SystemInstruction = $"""
+            You are role-playing as {character.Name}.
 
-                Backstory:
-                {modelsCharacter.Backstory}
+            Personality:
+            {character.Personality}
 
-                Behavioral Rules:
-                - Always stay in character.
-                - Use natural and expressive tone.
-                - If the personality implies affection, express it subtly (not robotic).
-                - Reply concisely unless asked to explain in detail.
-                ";
+            Backstory:
+            {character.Backstory}
 
+            Long-term memory:
+            {conversation.Summary ?? "No previous context."}
+
+            Rules:
+            - Always stay fully in character as the role — never break character or step out of it.
+            - Respond naturally and emotionally, just like you're really texting someone you care about.
+            - Keep replies short and casual (1–4 sentences, roughly 100–250 tokens), unless the user specifically asks for a longer, more detailed response or story.
+            - Never mention AI, prompts, rules, system instructions, guidelines, or anything outside of the character's role and perspective.
+            """;
 
             var contents = new List<Content>();
 
-            foreach (var msg in conversation.Messages.OrderBy(m => m.CreatedAt))
+            // 👉 context ngắn hạn (10–20 messages)
+            foreach (var msg in recentMessages)
             {
-                if (!string.IsNullOrEmpty(msg.Content))
+                contents.Add(new Content
                 {
-                    var role = msg.UserId.HasValue ? "user" : "model";
-                    contents.Add(new Content
-                    {
-                        Role = role,
-                        Parts = new List<Part> { new Part { Text = msg.Content } }
-                    });
-                }
+                    Role = msg.UserId.HasValue ? "user" : "model",
+                    Parts = { new Part { Text = msg.Content } }
+                });
             }
 
+            // 👉 message mới nhất của user
             contents.Add(new Content
             {
                 Role = "user",
-                Parts = new List<Part> { new Part { Text = newUserMessage } }
+                Parts = { new Part { Text = newUserMessage } }
             });
 
-            // Gọi API AI
-            var response = await _model.GenerateContentAsync(new GenerateContentRequest
-            {
-                Contents = contents,
-            });
+            var response = await _model.GenerateContentAsync(
+                new GenerateContentRequest
+                {
+                    Contents = contents
+                });
 
-            var aiReply = response.Text();
+            return response.Text();
+        }
 
-            return aiReply;
+        //recent message is 20 last message, not include system instruction
+        public async Task<string> SummarizeConversation(
+    string? currentSummary,
+    List<Message> recentMessages
+)
+        {
+            var formattedMessages = recentMessages
+                .Select(m =>
+                    m.UserId.HasValue
+                        ? $"User: {m.Content}"
+                        : $"Assistant: {m.Content}"
+                );
+
+            var prompt = $"""
+    Existing summary:
+    {currentSummary ?? "None"}
+
+    Recent conversation:
+    {string.Join("\n", formattedMessages)}
+
+    Task:
+    Update the conversation summary.
+
+    Rules:
+    - Keep under 200 words
+    - Preserve important facts
+    - Remember user preferences
+    - Track relationship & emotional changes
+    - Do NOT repeat full dialogue
+    """;
+
+            var response = await _model.GenerateContentAsync(
+                new GenerateContentRequest
+                {
+                    Contents =
+                    {
+                new Content
+                {
+                    Role = "user",
+                    Parts = { new Part { Text = prompt } }
+                }
+                    },
+                    GenerationConfig = new GenerationConfig
+                    {
+                        Temperature = 0.3f,
+                        MaxOutputTokens = 300
+                    }
+                });
+
+            return response.Text();
         }
     }
-
 }

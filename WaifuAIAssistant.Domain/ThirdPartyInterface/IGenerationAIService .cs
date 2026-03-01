@@ -9,6 +9,15 @@ namespace WaifuAIAssistant.Domain.ThirdPartyInterface
 {
     public interface IGenerationAIService
     {
-        Task<string> Response(Conversation conversation, ModelsCharacter modelsCharacter, string newUserMessage, int userId);
+        Task<string> GenerateReply(
+            Conversation conversation,
+            ModelsCharacter character,
+            List<Message> recentMessages,
+            string newUserMessage
+        );
+
+        Task<string> SummarizeConversation(
+    string? currentSummary,
+    List<Message> recentMessages);
     }
 }

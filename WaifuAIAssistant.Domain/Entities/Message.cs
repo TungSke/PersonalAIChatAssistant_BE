@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WaifuAIAssistant.Domain.Entities
+﻿namespace WaifuAIAssistant.Domain.Entities
 {
     public class Message
     {
@@ -17,7 +11,7 @@ namespace WaifuAIAssistant.Domain.Entities
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual Conversation Conversation { get; set; } 
-        public virtual Users? Users { get; set; }
+        public virtual User? Users { get; set; }
         public virtual ModelsCharacter? ModelsCharacter { get; set; }
     }
 }

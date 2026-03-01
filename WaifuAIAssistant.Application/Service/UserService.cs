@@ -30,12 +30,12 @@ namespace WaifuAIAssistant.Application.Service
             _googleService=googleService;
         }
 
-        private async Task<Users> findUserByEmail(string email)
+        private async Task<User> findUserByEmail(string email)
         {
             return await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(x => x.Email == email);
         }
 
-        public async Task<Users> findUserById(int id)
+        public async Task<User> findUserById(int id)
         {
             return await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
         }
@@ -62,7 +62,7 @@ namespace WaifuAIAssistant.Application.Service
                 };
             }
 
-            var newUser = request.Adapt<Users>();
+            var newUser = request.Adapt<User>();
             newUser.Id = new int();
             newUser.CreatedAt = DateTime.UtcNow;
             newUser.UpdatedAt = DateTime.UtcNow;

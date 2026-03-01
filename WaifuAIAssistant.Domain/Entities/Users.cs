@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using WaifuAIAssistant.Domain.Enums;
 
 namespace WaifuAIAssistant.Domain.Entities
 {
     [Index(nameof(Username) , nameof(Email))]
-    public class Users
+    public class User
     {
         public int Id { get; set; }
 

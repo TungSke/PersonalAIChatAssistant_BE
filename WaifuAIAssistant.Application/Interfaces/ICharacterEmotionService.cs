@@ -12,6 +12,6 @@ namespace WaifuAIAssistant.Application.Interfaces
     {
         Task<ApiResponse<List<string>>> GetAllDataEmotion();
 
-        Task<ApiResponse<List<CharacterEmotions>>> GetCharacterEmotion(int characterid);
+        Task<ApiResponse<List<CharacterEmotion>>> GetCharacterEmotion(int characterid);
     }
 }

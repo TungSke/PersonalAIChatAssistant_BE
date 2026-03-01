@@ -12,11 +12,11 @@ namespace WaifuAIAssistant.Infrastructure.Repository
         }
         public async Task<ModelsCharacter?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
         {
-            return await _context.ModelsCharacter.FirstOrDefaultAsync(m => m.Name == name, cancellationToken);
+            return await _context.ModelsCharacters.FirstOrDefaultAsync(m => m.Name == name, cancellationToken);
         }
         public async Task<IEnumerable<ModelsCharacter>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.ModelsCharacter
+            return await _context.ModelsCharacters
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }

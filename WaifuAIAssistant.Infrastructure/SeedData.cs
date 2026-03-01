@@ -9,8 +9,8 @@ namespace WaifuAIAssistant.Infrastructure
     {
         public static async Task Initialize(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Users>().HasData(
-                new Users
+            modelBuilder.Entity<User>().HasData(
+                new User
                 {
                     Id = 1,
                     Email = "tung@example.com",
@@ -34,8 +34,8 @@ namespace WaifuAIAssistant.Infrastructure
                     UpdatedAt = new DateTime(2024, 1, 1)
                 });
 
-            modelBuilder.Entity<CharacterEmotions>().HasData(
-                new CharacterEmotions
+            modelBuilder.Entity<CharacterEmotion>().HasData(
+                new CharacterEmotion
                 {
                     Id = 1,
                     EmotionName = "Neutral",
@@ -43,7 +43,7 @@ namespace WaifuAIAssistant.Infrastructure
                     EmotionIconUrl = "",
                     CharacterId = 1,
                 },
-                new CharacterEmotions
+                new CharacterEmotion
                 {
                     Id = 2,
                     EmotionName = "Happy",
@@ -51,7 +51,7 @@ namespace WaifuAIAssistant.Infrastructure
                     EmotionIconUrl = "",
                     CharacterId = 1,
                 },
-                new CharacterEmotions
+                new CharacterEmotion
                 {
                     Id = 3,
                     EmotionName = "Sad",
@@ -59,7 +59,7 @@ namespace WaifuAIAssistant.Infrastructure
                     EmotionIconUrl = "",
                     CharacterId = 1,
                 },
-                new CharacterEmotions
+                new CharacterEmotion
                 {
                     Id = 4,
                     EmotionName = "Angry",
@@ -67,7 +67,7 @@ namespace WaifuAIAssistant.Infrastructure
                     EmotionIconUrl = "",
                     CharacterId = 1,
                 },
-                new CharacterEmotions
+                new CharacterEmotion
                 {
                     Id = 5,
                     EmotionName = "Embarasshing",
@@ -75,7 +75,7 @@ namespace WaifuAIAssistant.Infrastructure
                     EmotionIconUrl = "",
                     CharacterId = 1,
                 },
-                new CharacterEmotions
+                new CharacterEmotion
                 {
                     Id = 6,
                     EmotionName = "Surprised",
@@ -83,7 +83,7 @@ namespace WaifuAIAssistant.Infrastructure
                     EmotionIconUrl = "",
                     CharacterId = 1,
                 },
-                new CharacterEmotions
+                new CharacterEmotion
                 {
                     Id = 7,
                     EmotionName = "Shocked",
@@ -91,7 +91,7 @@ namespace WaifuAIAssistant.Infrastructure
                     EmotionIconUrl = "",
                     CharacterId = 1,
                 },
-                new CharacterEmotions
+                new CharacterEmotion
                 {
                     Id = 8,
                     EmotionName = "Serious",
@@ -108,8 +108,6 @@ namespace WaifuAIAssistant.Infrastructure
                     UserId = 1,
                     WaifuId = 1,
                     Title = "Test",
-                    CreatedAt = new DateTime(2024, 1, 1),
-                    UpdatedAt = new DateTime(2024, 1, 1),
                     Status = ConversationStatus.Active,
                 }
                 );

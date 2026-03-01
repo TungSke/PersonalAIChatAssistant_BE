@@ -13,24 +13,23 @@ namespace WaifuAIAssistant.Infrastructure
         {
         }
 
-        public DbSet<Users> Users { get; set; }
-        public DbSet<ModelsCharacter> ModelsCharacter { get; set; }
-        public DbSet<Message> Message { get; set; }
-        public DbSet<CharacterEmotions> CharacterEmotions { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<ModelsCharacter> ModelsCharacters { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<CharacterEmotion> CharacterEmotions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Users>(entity =>
+            modelBuilder.Entity<User>(entity =>
             {
-                entity.ToTable("Users");
                 entity.HasIndex(e => e.Id).IsUnique();
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(50);
             });
 
-            modelBuilder.Entity<CharacterEmotions>(entity =>
+            modelBuilder.Entity<CharacterEmotion>(entity =>
             {
                 entity.HasIndex(e => e.Id).IsUnique();
 
@@ -42,7 +41,6 @@ namespace WaifuAIAssistant.Infrastructure
 
             modelBuilder.Entity<ModelsCharacter>(entity =>
             {
-                entity.ToTable("ModelCharacters");
                 entity.HasIndex(e => e.Id).IsUnique();
                 entity.Property(e => e.Name).IsRequired();
                 entity.HasMany(c => c.CharacterEmotions)
@@ -54,19 +52,31 @@ namespace WaifuAIAssistant.Infrastructure
 
             modelBuilder.Entity<Conversation>(entity =>
             {
-                entity.ToTable("Conversations");
                 entity.HasIndex(e => e.Id).IsUnique();
                 entity.HasOne(c => c.User)
                     .WithMany(u => u.Conversations)
                     .HasForeignKey(c => c.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()")
+                      .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.UpdatedAt)
+                      .ValueGeneratedOnAddOrUpdate()
+                      .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.Property(e => e.SummaryAt)
+                      .ValueGeneratedOnAdd()
+                      .HasDefaultValueSql("GETUTCDATE()");
+
                 entity.HasMany(e => e.Messages).WithOne(c => c.Conversation).OnDelete(DeleteBehavior.Cascade);
+
             });
 
             modelBuilder.Entity<Message>(entity =>
             {
-                entity.ToTable("Messages");
                 entity.HasIndex(e => e.Id).IsUnique();
 
                 entity.HasOne(m => m.Conversation)

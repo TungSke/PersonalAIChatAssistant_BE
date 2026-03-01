@@ -32,7 +32,7 @@ namespace WaifuAIAssistant.Application.Service
             };
         }
 
-        public async Task<ApiResponse<List<CharacterEmotions>>> GetCharacterEmotion(int characterid)
+        public async Task<ApiResponse<List<CharacterEmotion>>> GetCharacterEmotion(int characterid)
         {
             var list = await _unitOfWork.CharacterEmotionsRepository.GetAll().Where(x => x.CharacterId == characterid).ToListAsync();
 
@@ -41,9 +41,9 @@ namespace WaifuAIAssistant.Application.Service
                 throw new KeyNotFoundException("No emotions found for the specified character.");
             }
 
-            var response = list.Adapt<List<CharacterEmotions>>();
+            var response = list.Adapt<List<CharacterEmotion>>();
 
-            return new ApiResponse<List<CharacterEmotions>>
+            return new ApiResponse<List<CharacterEmotion>>
             {
                 Success = true,
                 Data = response
