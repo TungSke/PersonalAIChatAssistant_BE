@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WaifuAIAssistant.Application.DTOs.Request;
 using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Service.DTOs.Request;
@@ -27,6 +28,7 @@ namespace WaifuAIAssistant.API.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("loginPolicy")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
             var response = await _userService.Login(request);

@@ -8,6 +8,7 @@ using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using WaifuAIAssistant.API;
 using WaifuAIAssistant.API.Middleware;
 using WaifuAIAssistant.Application.Interfaces;
@@ -102,6 +103,27 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(connectionString);
 });
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("messagePolicy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+
+    options.AddPolicy("loginPolicy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+});
+
 
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<ApplicationDbContext>();
@@ -128,6 +150,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
+app.UseRateLimiter();
 
 app.UseHttpsRedirection();
 

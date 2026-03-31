@@ -18,7 +18,7 @@ namespace WaifuAIAssistant.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(int pageIndex, int pageSize, string? search)
+        public async Task<IActionResult> Get(int pageIndex = 1, int pageSize = 5, string? search = "")
         {
             var characters = await _modelsCharacterService.GetAllAsync(pageIndex, pageSize, search);
             if (characters == null)

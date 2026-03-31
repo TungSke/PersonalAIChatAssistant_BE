@@ -27,7 +27,7 @@ namespace WaifuAIAssistant.API.Controllers
             return Ok(response);
         }
 
-        [HttpPost("id")]
+        [HttpPost]
         public async Task<IActionResult> CreateConversation(ConversationRequest request)
         {
             var userId = getUserid();
@@ -37,6 +37,17 @@ namespace WaifuAIAssistant.API.Controllers
                 return BadRequest(Response);
             }
             return Ok(reponse);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteConversation(int conversationId)
+        {
+            var response = await _service.DeleteConversation(conversationId);
+            if (response.Success == false)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
     }
 }

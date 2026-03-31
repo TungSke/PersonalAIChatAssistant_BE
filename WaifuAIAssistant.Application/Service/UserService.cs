@@ -1,4 +1,4 @@
-﻿using Mapster;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WaifuAIAssistant.Application.DTOs.Request;
@@ -22,6 +22,7 @@ namespace WaifuAIAssistant.Application.Service
         private readonly IPasswordHandlerService _passwordHandlerService;
         private readonly IJwtService _jWTService;
         private readonly GoogleService _googleService;
+
         public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, IJwtService jWTService, GoogleService googleService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -37,7 +38,7 @@ namespace WaifuAIAssistant.Application.Service
 
         public async Task<User> findUserById(int id)
         {
-            return await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            return await _unitOfWork.UserRepository.FindAsync(id);
         }
 
         public async Task<ApiResponse<RegisterResponse>> Register(RegisterRequest request)
@@ -111,7 +112,16 @@ namespace WaifuAIAssistant.Application.Service
         {
             var user = await findUserByEmail(request.Email);
 
-            var passwordVerificationResult = _passwordHandlerService.VerifyPassword(user.PasswordHash, request.Password);
+            if (user == null)
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Email not found",
+                };
+            }
+
+            var passwordVerificationResult =  _passwordHandlerService.VerifyPassword(user.PasswordHash, request.Password);
             if (passwordVerificationResult != PasswordVerificationResult.Success)
             {
                 throw new UnauthorizedAccessException("Invalid credentials");
