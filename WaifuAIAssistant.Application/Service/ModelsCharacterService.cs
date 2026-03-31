@@ -1,12 +1,9 @@
 ﻿using Mapster;
-using Microsoft.EntityFrameworkCore;
 using WaifuAIAssistant.Application.DTOs.Response;
 using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Base;
-using WaifuAIAssistant.Domain.Entities;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
-using WaifuAIAssistant.Infrastructure.ThirdParty;
 
 namespace WaifuAIAssistant.Application.Service
 {

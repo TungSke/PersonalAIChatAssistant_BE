@@ -97,10 +97,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString =
-        config.GetConnectionString("RedisConnection");
-
-    return ConnectionMultiplexer.Connect(connectionString);
+    var connectionString = config.GetConnectionString("RedisConnection");
+    return ConnectionMultiplexer.ConnectAsync(connectionString).GetAwaiter().GetResult();
 });
 
 builder.Services.AddRateLimiter(options =>

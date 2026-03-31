@@ -9,5 +9,6 @@ namespace WaifuAIAssistant.Application.DTOs.Response
     public class LoginResponse
     {
         public string Token { get; set; }
+        public string refreshToken { get; set; }
     }
 }

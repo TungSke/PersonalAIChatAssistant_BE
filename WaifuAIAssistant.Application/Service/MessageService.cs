@@ -1,7 +1,5 @@
-﻿using Azure;
-using Mapster;
+﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 using WaifuAIAssistant.Application.DTOs.Request;
 using WaifuAIAssistant.Application.DTOs.Response;
 using WaifuAIAssistant.Application.Interfaces;

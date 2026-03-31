@@ -1,7 +1,6 @@
 ﻿using GenerativeAI;
 using GenerativeAI.Types;
 using Microsoft.Extensions.Configuration;
-using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Entities;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
 

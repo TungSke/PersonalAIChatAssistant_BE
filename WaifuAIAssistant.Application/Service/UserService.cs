@@ -141,7 +141,8 @@ namespace WaifuAIAssistant.Application.Service
                 Message = "Login successful",
                 Data = new LoginResponse
                 {
-                    Token = jwtToken
+                    Token = jwtToken, 
+                    refreshToken = user.RefreshToken
                 }
             };
         }
