@@ -1,40 +1,41 @@
 # WaifuAIAssistant Backend
 
-**WaifuAIAssistant** là một hệ thống trợ lý AI ảo được phát triển với ASP.NET Core, cung cấp API backend để quản lý nhân vật AI, tương tác hội thoại, cài đặt người dùng và lịch sử trò chuyện. Hệ thống hỗ trợ tích hợp AI (OpenAI, Local Model, v.v.), cho phép cá nhân hóa theo người dùng.
+**WaifuAIAssistant** is a virtual AI assistant system developed with ASP.NET Core (.NET 10). It provides a backend API for managing AI characters, conversation interactions, user settings, and chat history. The system supports various AI integrations (such as OpenAI and Local Models), allowing highly personalized user experiences.
 
 ---
 
-## 🚀 Công nghệ sử dụng
+## 🚀 Technologies Used
 
-- **.NET 8 / ASP.NET Core Web API**
-- **Entity Framework Core** (Database First / Code First)
-- **SQL Server** (Hệ quản trị cơ sở dữ liệu chính)
+- **.NET 10 / ASP.NET Core Web API**
+- **Entity Framework Core**
+- **SQL Server** (Primary Database)
+- **Redis** (Distributed Caching)
 - **JWT Authentication**
 - **Swagger / Swashbuckle** (API Documentation)
-- **Serilog** (Logging)
-- **AutoMapper** (DTO Mapping)
+- **Mapster** (DTO Mapping)
 - **Clean Architecture** (Domain-Driven Design - DDD)
 
 ---
 
-## 🧠 Kiến trúc dự án
+## 🧠 Project Architecture
 
-Dự án tuân thủ theo mô hình Clean Architecture gồm 4 tầng chính:
+The project strictly follows the Clean Architecture pattern and is organized into 4 main layers:
 
-- `WaifuAIAssistant.Domain`: Khai báo entity, interface repository, logic nghiệp vụ thuần.
-- `WaifuAIAssistant.Application`: Chứa DTO, UseCase, interface service và logic ứng dụng.
-- `WaifuAIAssistant.Infrastructure`: Giao tiếp với database (EF Core), cấu hình repository.
-- `WaifuAIAssistant.API`: API Endpoint, DI container, cấu hình middleware, controller, v.v.
+- `WaifuAIAssistant.Domain`: Core entities, repository interfaces, and domain models.
+- `WaifuAIAssistant.Application`: Application services, UseCases, DTOs, and interface definitions.
+- `WaifuAIAssistant.Infrastructure`: External integrations, database contexts (EF Core), and third-party services.
+- `WaifuAIAssistant.API`: Controllers, Dependency Injection (DI) configurations, middlewares, rate-limiting, and API endpoints.
 
 ---
 
-## 📦 Các tính năng chính
+## 📦 Key Features
 
-- 🔐 **Đăng ký / Đăng nhập** với JWT Token
-- 🤖 **Quản lý nhân vật AI** (ModelCharacter)
-- 🗣️ **Tạo và lưu trữ đoạn hội thoại giữa người dùng và AI**
-- 🧠 **Tùy chỉnh tính cách, cốt truyện của nhân vật AI**
-- 📊 **Lưu lịch sử trò chuyện của người dùng**
-- 🛡️ **Cấu hình và quản lý người dùng, phân quyền Role**
+- 🔐 **User Authentication**: Secure Registration/Login using JWT Tokens and OTP Verification.
+- 🤖 **AI Character Management**: Create and manage customizable AI personalities (ModelCharacter).
+- 🗣️ **Conversation System**: Create, manage, and store chat sessions between users and AI companions.
+- 🧠 **Rich AI Settings**: Customize emotions, storylines, and behaviors of the virtual assistants.
+- 📊 **Chat History**: Persistent storage and retrieval of user chat histories.
+- 🛡️ **Role & User Management**: Secure configuration and authorization.
+- ⚡ **Performance Optimized**: Implements Redis caching and endpoint rate limiting.
 
 ---

@@ -173,7 +173,7 @@ namespace WaifuAIAssistant.Application.Service
 
             return new ApiResponse<string>
             {
-                Success = false,
+                Success = true,
                 Message = aiReply
             };
         }
