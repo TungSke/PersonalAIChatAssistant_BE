@@ -13,5 +13,7 @@ namespace WaifuAIAssistant.Application.Interfaces
         Task<ApiResponse<LoginResponse>> Login(LoginRequest request);
 
         Task<ApiResponse<string>> VerifyAccount(VerifyAccountRequest request);
+
+        Task<ApiResponse<string>> RefreshToken(RefreshTokenRequest request)
     }
 }

@@ -146,5 +146,32 @@ namespace WaifuAIAssistant.Application.Service
                 }
             };
         }
+
+        public async Task<ApiResponse<string>> RefreshToken(RefreshTokenRequest request)
+        {
+            var user = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.RefreshToken == request.Token);
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid refresh token",
+                    Errors = new List<string> { "Invalid refresh token" }
+                };
+            }
+            // Generate new JWT token
+            var jwtToken = await _jWTService.GenerateJwtToken(user);
+            // Optionally, you can also generate a new refresh token and update the user's record
+            user.RefreshToken = await _jWTService.GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Set new refresh token expiry time
+            await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+            return new ApiResponse<string>
+            {
+                Success = true,
+                Message = "Token refreshed successfully",
+                Data = jwtToken
+            };
+        }
     }
 }

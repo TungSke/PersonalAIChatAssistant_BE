@@ -20,12 +20,39 @@ namespace WaifuAIAssistant.API.Controllers
             _service = service;
         }
 
-        [HttpGet("{conversationId}/{beforeMessageId}")]
-        public async Task<IActionResult> GetAllMessageInConversation(
-            [Required]int conversationId,
-            [SwaggerParameter("The ID of the message to start before")] int? beforeMessageId)
+        [HttpGet]
+        [SwaggerOperation(
+    Summary = "Get messages in a conversation",
+    Description = "Supports initial load, loading older messages (beforeMessageId), and fetching new messages (afterMessageId)."
+)]
+        public async Task<IActionResult> GetMessages(
+    [FromQuery][Required]
+    [SwaggerParameter("The ID of the conversation to retrieve messages from", Required = true)]
+    int conversationId,
+
+    [FromQuery]
+    int limit = 30,
+
+    [FromQuery]
+    [SwaggerParameter("Fetch messages with IDs less than this value (used for loading older messages when scrolling up)")]
+    long? beforeMessageId = null,
+
+    [FromQuery]
+    [SwaggerParameter("Fetch messages with IDs greater than this value (used for retrieving new messages)")]
+    long? afterMessageId = null)
         {
-            var response = await _service.GetMessagesFromConversation(conversationId, 30, beforeMessageId);
+            if (beforeMessageId != null && afterMessageId != null)
+            {
+                return BadRequest("Cannot use both beforeMessageId and afterMessageId at the same time.");
+            }
+
+            var response = await _service.GetMessagesFromConversation(
+                conversationId,
+                limit,
+                beforeMessageId,
+                afterMessageId
+            );
+
             return Ok(response);
         }
 
