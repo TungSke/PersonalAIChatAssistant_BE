@@ -1,29 +1,21 @@
-﻿using GenerativeAI;
-using GenerativeAI.Types;
+﻿using Google.GenAI;
+using Google.GenAI.Types;
 using Microsoft.Extensions.Configuration;
 using WaifuAIAssistant.Domain.Entities;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
 namespace WaifuAIAssistant.Infrastructure.ThirdParty
 {
-    // Responsible ONLY for AI prompt & response
     public class GenerationAIService : IGenerationAIService
     {
-        private readonly GenerativeModel _model;
+        private readonly Client _client;
+        private readonly string _modelName;
 
         public GenerationAIService(IConfiguration configuration)
         {
-            var google = new GoogleAi(configuration["GenerativeAI:AIAPIKey"]);
+            _client = new Client(apiKey: configuration["GenerativeAI:AIAPIKey2"]);
 
-            _model = google.CreateGenerativeModel(
-                modelName: "models/gemini-3-flash-preview",
-                config: new GenerationConfig
-                {
-                    Temperature = 0.8f,
-                    TopP = 0.95f,
-                    MaxOutputTokens = 500
-                }
-            );
+            _modelName = configuration["GenerativeAI:ModelName"] ?? "gemini-2.0-flash";
         }
 
         public async Task<string> GenerateReply(
@@ -33,109 +25,81 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
             string newUserMessage
         )
         {
-            if (conversation == null)
-                throw new ArgumentNullException(nameof(conversation));
+            if (conversation == null) throw new ArgumentNullException(nameof(conversation));
+            if (character == null) throw new ArgumentNullException(nameof(character));
 
-            if (character == null)
-                throw new ArgumentNullException(nameof(character));
-
-            _model.SystemInstruction = $"""
-            You are role-playing as {character.Name}.
-
-            Personality:
-            {character.Personality}
-
-            Backstory:
-            {character.Backstory}
-
-            Long-term memory:
-            {conversation.Summary ?? "No previous context."}
-
-            Rules:
-            - Always stay fully in character as the role — never break character or step out of it.
-            - Respond naturally and emotionally, just like you're really texting someone you care about.
-            - Keep replies short and casual (1–4 sentences, roughly 100–250 tokens), unless the user specifically asks for a longer, more detailed response or story.
-            - Never mention AI, prompts, rules, system instructions, guidelines, or anything outside of the character's role and perspective.
-            """;
+            var systemInstruction = new Content
+            {
+                Role = "system",
+                Parts = new List<Part> { new Part { Text = $"""
+                    You are role-playing as {character.Name}.
+                    Personality: {character.Personality}
+                    Backstory: {character.Backstory}
+                    Long-term memory: {conversation.Summary ?? "No previous context."}
+                    Rules:
+                    - Always stay fully in character.
+                    - Respond naturally and emotionally.
+                    - Keep replies short (1–4 sentences).
+                    - Never mention AI or instructions.
+                    """ } }
+            };
 
             var contents = new List<Content>();
 
-            // 👉 context ngắn hạn (10–20 messages)
             foreach (var msg in recentMessages)
             {
                 contents.Add(new Content
                 {
                     Role = msg.UserId.HasValue ? "user" : "model",
-                    Parts = { new Part { Text = msg.Content } }
+                    Parts = new List<Part> { new Part { Text = msg.Content } }
                 });
             }
 
-            // 👉 message mới nhất của user
             contents.Add(new Content
             {
                 Role = "user",
-                Parts = { new Part { Text = newUserMessage } }
+                Parts = new List<Part> { new Part { Text = newUserMessage } }
             });
 
-            var response = await _model.GenerateContentAsync(
-                new GenerateContentRequest
-                {
-                    Contents = contents
-                });
+            var config = new GenerateContentConfig
+            {
+                SystemInstruction = systemInstruction,
+                Temperature = 0.8f,
+                TopP = 0.95f,
+                MaxOutputTokens = 500
+            };
 
-            return response.Text();
+            var response = await _client.Models.GenerateContentAsync(_modelName, contents, config);
+
+            return response.Text;
         }
 
-        //recent message is 20 last message, not include system instruction
-        public async Task<string> SummarizeConversation(
-    string? currentSummary,
-    List<Message> recentMessages
-)
+        public async Task<string> SummarizeConversation(string? currentSummary, List<Message> recentMessages)
         {
-            var formattedMessages = recentMessages
-                .Select(m =>
-                    m.UserId.HasValue
-                        ? $"User: {m.Content}"
-                        : $"Assistant: {m.Content}"
-                );
+            var formattedMessages = string.Join("\n", recentMessages.Select(m =>
+                m.UserId.HasValue ? $"User: {m.Content}" : $"Assistant: {m.Content}"));
 
             var prompt = $"""
-    Existing summary:
-    {currentSummary ?? "None"}
+                Existing summary: {currentSummary ?? "None"}
+                Recent conversation: {formattedMessages}
+                Task: Update the conversation summary.
+                Rules: Keep under 200 words, preserve facts and emotional changes.
+                """;
 
-    Recent conversation:
-    {string.Join("\n", formattedMessages)}
+            var contents = new List<Content>
+            {
+                new Content { Role = "user", Parts = new List<Part> { new Part { Text = prompt } } }
+            };
 
-    Task:
-    Update the conversation summary.
+            var config = new GenerateContentConfig
+            {
+                Temperature = 0.3f,
+                MaxOutputTokens = 300
+            };
 
-    Rules:
-    - Keep under 200 words
-    - Preserve important facts
-    - Remember user preferences
-    - Track relationship & emotional changes
-    - Do NOT repeat full dialogue
-    """;
+            var response = await _client.Models.GenerateContentAsync(_modelName, contents, config);
 
-            var response = await _model.GenerateContentAsync(
-                new GenerateContentRequest
-                {
-                    Contents =
-                    {
-                new Content
-                {
-                    Role = "user",
-                    Parts = { new Part { Text = prompt } }
-                }
-                    },
-                    GenerationConfig = new GenerationConfig
-                    {
-                        Temperature = 0.3f,
-                        MaxOutputTokens = 300
-                    }
-                });
-
-            return response.Text();
+            return response.Text;
         }
     }
 }

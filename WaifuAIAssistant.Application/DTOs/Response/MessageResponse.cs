@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WaifuAIAssistant.Application.DTOs.Response
+﻿namespace WaifuAIAssistant.Application.DTOs.Response
 {
     public class MessageResponse
     {

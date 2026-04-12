@@ -51,5 +51,16 @@ namespace WaifuAIAssistant.API.Controllers
             return BadRequest(response);
 
         }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
+        {
+            var response = await _userService.RefreshToken(request);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }

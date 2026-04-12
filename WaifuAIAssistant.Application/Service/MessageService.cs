@@ -25,60 +25,96 @@ namespace WaifuAIAssistant.Application.Service
             _redisCacheService = redisCacheService;
         }
 
-        public async Task<ApiResponse<List<MessageResponse>>> GetMessagesFromConversation(int conversationId, int limit = 30,long? beforeMessageId = null)
+        public async Task<ApiResponse<MessageListResponse>> GetMessagesFromConversation(
+            int conversationId,
+            int limit = 30,
+            long? beforeMessageId = null,
+            long? afterMessageId = null)
         {
             var userId = await _jwtService.GetUserId();
-
-            // only cache latest messages
-            var cacheKey = $"chat:{conversationId}:latest";
-
-            if (beforeMessageId == null)
-            {
-                var cached = await _redisCacheService
-                    .GetAsync<List<MessageResponse>>(cacheKey);
-
-                if (cached != null)
-                {
-                    return new ApiResponse<List<MessageResponse>>
-                    {
-                        Success = true,
-                        Data = cached
-                    };
-                }
-            }
 
             var query = _unitOfWork.MessageRepository
                 .GetAll()
                 .Where(x => x.ConversationId == conversationId);
 
-            if (beforeMessageId != null)
+            List<Message> messages;
+
+            if (afterMessageId != null)
             {
-                query = query.Where(x => x.Id < beforeMessageId);
+                messages = await query
+                    .Where(x => x.Id > afterMessageId)
+                    .OrderBy(x => x.Id)
+                    .ToListAsync();
             }
 
-            var messages = await query
-                .OrderByDescending(x => x.Id)
-                .Take(limit)
-                .ToListAsync();
-
-            var response = messages
-                .OrderBy(x => x.Id)
-                .Adapt<List<MessageResponse>>();
-
-            // 👉 cache chỉ khi là load lần đầu
-            if (beforeMessageId == null)
+            else if (beforeMessageId != null)
             {
+                messages = await query
+                    .Where(x => x.Id < beforeMessageId)
+                    .OrderByDescending(x => x.Id)
+                    .Take(limit)
+                    .ToListAsync();
+
+                messages = messages.OrderBy(x => x.Id).ToList();
+            }
+
+            else
+            {
+                var cacheKey = $"chat:{conversationId}:latest:{limit}";
+
+                var cached = await _redisCacheService
+                    .GetAsync<MessageListResponse>(cacheKey);
+
+                if (cached != null)
+                {
+                    return new ApiResponse<MessageListResponse>
+                    {
+                        Success = true,
+                        Data = cached
+                    };
+                }
+
+                messages = await query
+                    .OrderByDescending(x => x.Id)
+                    .Take(limit)
+                    .ToListAsync();
+
+                messages = messages.OrderBy(x => x.Id).ToList();
+
+                var responseCached = BuildResponse(messages, limit);
+
                 await _redisCacheService.SetAsync(
                     cacheKey,
-                    response,
+                    responseCached, 
                     TimeSpan.FromSeconds(30)
                 );
+
+                return new ApiResponse<MessageListResponse>
+                {
+                    Success = true,
+                    Data = responseCached
+                };
             }
 
-            return new ApiResponse<List<MessageResponse>>
+            var response = BuildResponse(messages, limit);
+
+            return new ApiResponse<MessageListResponse>
             {
                 Success = true,
                 Data = response
+            };
+        }
+
+        private MessageListResponse BuildResponse(List<Message> messages, int limit)
+        {
+            var mapped = messages.Adapt<List<MessageResponse>>();
+
+            return new MessageListResponse
+            {
+                Messages = mapped,
+                FirstMessageId = mapped.FirstOrDefault()?.Id,
+                LastMessageId = mapped.LastOrDefault()?.Id,
+                HasMore = messages.Count == limit // chỉ đúng với before
             };
         }
 
@@ -173,7 +209,7 @@ namespace WaifuAIAssistant.Application.Service
 
             return new ApiResponse<string>
             {
-                Success = false,
+                Success = true,
                 Message = aiReply
             };
         }
