@@ -6,6 +6,7 @@ using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Base;
 using WaifuAIAssistant.Domain.Entities;
+using WaifuAIAssistant.Domain.Enums;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
 namespace WaifuAIAssistant.Application.Service
@@ -70,14 +71,21 @@ namespace WaifuAIAssistant.Application.Service
             try
             {
                 var userId = await _jwtService.GetUserId();
-                var createCon = request.Adapt<Conversation>();
-
                 var waifuName = await _unitOfWork.ModelRepository.FindAsync(request.WaifuId);
 
+                var createCon = request.Adapt<Conversation>();
+                createCon.UserId = userId;
                 createCon.Title = string.IsNullOrEmpty(request.Title) ? waifuName.Name : request.Title;
+                createCon.Status = ConversationStatus.Active;
 
                 await _unitOfWork.ConversationRepository.AddAsync(createCon);
                 await _unitOfWork.SaveChangesAsync();
+                return new ApiResponse<ConversationRequest>
+                {
+                    Success = true,
+                    Message = "Created success!",
+                    Data = request
+                };
             }
             catch (Exception e)
             {
@@ -87,12 +95,6 @@ namespace WaifuAIAssistant.Application.Service
                     Message = e.Message
                 };
             }
-            return new ApiResponse<ConversationRequest>
-            {
-                Success = true,
-                Message = "Create success!",
-                Data = request
-            };
         }
 
         public async Task<ApiResponse<ConversationRequest>> DeleteConversation(int id)
