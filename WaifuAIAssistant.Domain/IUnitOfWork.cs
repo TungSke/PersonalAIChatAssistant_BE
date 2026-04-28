@@ -15,5 +15,6 @@ namespace WaifuAIAssistant.Domain
         IMessageRepository MessageRepository { get; }
         IModelsCharacterRepository ModelRepository { get; }
         IUserRepository UserRepository { get; }
+        IPromptRepository PromptRepository { get; }
     }
 }
