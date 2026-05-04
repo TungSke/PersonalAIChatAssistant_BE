@@ -146,7 +146,7 @@ namespace WaifuAIAssistant.Application.Service
             await _unitOfWork.MessageRepository.AddAsync(userMessage);
             await _unitOfWork.SaveChangesAsync();
 
-            // 2️⃣ Load character
+            // get the character want to use for generating AI reply
             var character = await _unitOfWork.ModelRepository
                 .GetAll()
                 .FirstOrDefaultAsync(x => x.Id == conversation.WaifuId);
@@ -175,14 +175,14 @@ namespace WaifuAIAssistant.Application.Service
                 request.Content
             );
 
-            // Save AI message
-            var aiMessage = new Message
-            {
-                ConversationId = conversation.Id,
-                ModelCharacterId = character.Id,
-                Content = aiReply,
-                CreatedAt = DateTime.UtcNow
-            };
+           //Save AI message
+           var aiMessage = new Message
+           {
+               ConversationId = conversation.Id,
+               ModelCharacterId = character.Id,
+               Content = aiReply,
+               CreatedAt = DateTime.UtcNow
+           };
 
             await _unitOfWork.MessageRepository.AddAsync(aiMessage);
             await _unitOfWork.SaveChangesAsync();
@@ -194,7 +194,7 @@ namespace WaifuAIAssistant.Application.Service
 
             if (messageCount % 20 == 0)
             {
-                
+
 
                 var newSummary = await _generationAIService.SummarizeConversation(
                     conversation.Summary,

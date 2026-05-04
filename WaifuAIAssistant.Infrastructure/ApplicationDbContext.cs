@@ -17,6 +17,9 @@ namespace WaifuAIAssistant.Infrastructure
         public DbSet<ModelsCharacter> ModelsCharacters { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<CharacterEmotion> CharacterEmotions { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<PromptTemplate> PromptTemplates { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -95,7 +98,22 @@ namespace WaifuAIAssistant.Infrastructure
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<PromptTemplate>(entity =>
+            {
+                entity.HasIndex(e => e.Id).IsUnique();
+                entity.Property(e => e.PromptKey).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Content).IsRequired();
+                entity.Property(e => e.Version).IsRequired();
+                entity.Property(e => e.IsActive).IsRequired();
 
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()")
+                      .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.UpdatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()")
+                      .ValueGeneratedOnAddOrUpdate();
+            });
 
             SeedData.Initialize(modelBuilder);
         }

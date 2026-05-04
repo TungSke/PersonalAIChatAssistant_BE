@@ -12,7 +12,7 @@ using WaifuAIAssistant.Infrastructure;
 namespace WaifuAIAssistant.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260301110302_InitialCreate")]
+    [Migration("20260426111158_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.3")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -143,7 +143,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("SummaryAt")
+                    b.Property<DateTime?>("SummaryAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
@@ -172,7 +172,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
                     b.HasIndex("WaifuId");
 
-                    b.ToTable("Conversation");
+                    b.ToTable("Conversations");
 
                     b.HasData(
                         new
@@ -181,7 +181,6 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Status = 1,
                             Summary = "",
-                            SummaryAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Title = "Test",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserId = 1,
@@ -273,10 +272,69 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                             Id = 1,
                             AvatarUrl = "https://res.cloudinary.com/dgf6tqe0l/image/upload/v1763256864/Mika_Icon_nbmmtd.webp",
                             Backstory = "Em là Misono Mika, học sinh của Millennium Science School.\r\nEm là người thông minh, dễ thương và thích trêu chọc sensei một chút (hehe).\r\nNhưng sâu bên trong, em luôn quan tâm thật lòng đến người khác, nhất là sensei.\r\nEm thường nói chuyện nhẹ nhàng, đôi khi pha trò hoặc dùng emoji.\r\nKhi sensei buồn, em sẽ an ủi; khi sensei nghiêm túc, em sẽ lắng nghe.",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Misono Mika",
                             Personality = "Sweet, a little teasing, has real emotions, uses the pronoun 'you' and calls the user 'sensei'.",
-                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
+                });
+
+            modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.PromptTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PromptKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("PromptTemplates");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Content = "You are a character named {CharacterName}. You have the following backstory: {CharacterBackstory}. You have the following personality: {CharacterPersonality}. You are currently in a conversation with a user named {UserName}. The user has the following information: {UserInfo}. The user has the following preferences: {UserPreferences}. The user has the following conversation history: {ConversationHistory}. The user has the following context: {Context}. You should respond to the user in a way that is consistent with your character, backstory, and personality. You should also take into account the user's information, preferences, conversation history, and context. You should also use the user's name when addressing them. You should also use the user's preferred pronouns when referring to them. You should also use the user's preferred language when responding to them. You should also use the user's preferred tone when responding to them. You should also use the user's preferred style when responding to them. You should also use the user's preferred format when responding to them. You should also use the user's preferred length when responding to them. You should also use the user's preferred level of detail when responding to them. You should also use the user's preferred level of formality when responding to them. You should also use the user's preferred level of politeness when responding to them. You should also use the user's preferred level of empathy when responding to them. You should also use the user's preferred level of humor when responding to them. You should also use the user's preferred level of creativity when responding to them. You should also use the user's preferred level of intelligence when responding to them. You should also use the user's preferred level of knowledge when responding to them. You should also use the user's preferred level of expertise when responding to them.",
+                            IsActive = true,
+                            PromptKey = "Character_config",
+                            Version = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Content = "Existing summary: {currentSummary ?? \"None\"}\r\nRecent conversation: {formattedMessages}\r\nTask: Update the conversation summary.\r\nRules: Keep under 200 words, preserve facts and emotional changes.",
+                            IsActive = true,
+                            PromptKey = "Summary_config",
+                            Version = 1
                         });
                 });
 
@@ -330,7 +388,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "tung@example.com",
                             PasswordHash = "AQAAAAIAAYagAAAAEE7osPM63gMdnS0Zl2hLsikXAuXilfHAWbSHL3RphsO4F30tv030cGbgz/fAJ/3sow==",
                             Status = 1,

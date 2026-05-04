@@ -13,6 +13,7 @@ namespace WaifuAIAssistant.Infrastructure
         private IConversationRepository _conversationRepository;
         private IMessageRepository _messageRepository;
         private IModelsCharacterRepository _modelRepository;
+        private IPromptRepository _promptRepository;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -28,6 +29,8 @@ namespace WaifuAIAssistant.Infrastructure
         public IMessageRepository MessageRepository => _messageRepository ??= new MessageRepository(_context);
 
         public IModelsCharacterRepository ModelRepository => _modelRepository ??= new ModelsCharacterRepository(_context);
+
+        public IPromptRepository PromptRepository => _promptRepository ??= new PromptRepository(_context);
 
         public Task BeginTransactionAsync()
         {
