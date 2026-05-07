@@ -1,6 +1,7 @@
 ﻿using Google.GenAI;
 using Google.GenAI.Types;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Entities;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
@@ -22,45 +23,70 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
         }
 
         public async Task<string> GenerateReply(
-            Conversation conversation,
-            ModelsCharacter character,
-            List<Message> recentMessages,
-            string newUserMessage
-        )
+                                Conversation conversation,
+                                ModelsCharacter character,
+                                List<Message> recentMessages,
+                                string newUserMessage)
         {
-            if (conversation == null) throw new ArgumentNullException(nameof(conversation));
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            ArgumentNullException.ThrowIfNull(conversation);
+            ArgumentNullException.ThrowIfNull(character);
 
+            var promptTemplate = await _unitOfWork.PromptRepository.getPromptValueByName("character_config");
 
-            var promptemplate = await _unitOfWork.PromptRepository.getPromptValueByName("character_config");
-            promptemplate = promptemplate.Replace("{CharacterName}", character.Name)
-                                         .Replace("{CharacterPersonality}", character.Personality)
-                                         .Replace("{CharacterBackstory}", character.Backstory)
-                                         .Replace("{ConversationSummary ?? \"No previous context.\"}", conversation.Summary ?? "No previous context.")
-                ;
+            if (string.IsNullOrWhiteSpace(promptTemplate))
+                throw new InvalidOperationException("Prompt template not found.");
+
+            var prompt = promptTemplate
+                .Replace("{CharacterName}", character.Name)
+                .Replace("{CharacterPersonality}", character.Personality)
+                .Replace("{CharacterBackstory}", character.Backstory)
+                .Replace("{ConversationSummary}",
+                    conversation.Summary ?? "No previous context.");
+
+            // Create a system instruction content that provides the AI model with the character's context and conversation summary.
             var systemInstruction = new Content
             {
                 Role = "system",
-                Parts = new List<Part> { new Part { Text = promptemplate } }
+                Parts = new List<Part> { new Part { Text = prompt } }
             };
 
             var contents = new List<Content>();
 
+            // Add recent messages to the contents list, formatting them with timestamps and speaker information.
             foreach (var msg in recentMessages)
             {
                 contents.Add(new Content
                 {
-                    Role = msg.UserId.HasValue ? "user" : "model",
-                    Parts = new List<Part> { new Part { Text = msg.Content } }
+                    Role = msg.ModelCharacterId.HasValue ? "model" : "user",
+                    Parts = new List<Part>
+                    {
+                        new Part
+                        {
+                            Text =
+                                $"[Time: {msg.CreatedAt:O}] " +
+                                $"[Speaker: {(msg.ModelCharacterId.HasValue ? "MODEL" : "USER")}] " +
+                                $"{msg.Content}"
+                        }
+                    }
                 });
             }
 
             contents.Add(new Content
             {
                 Role = "user",
-                Parts = new List<Part> { new Part { Text = newUserMessage } }
+                Parts = new List<Part>
+                {
+                    new Part
+                    {
+                        Text =
+                            $"[Time: {DateTime.UtcNow:O}] " +
+                            $"[Speaker: User] " +
+                            $"{newUserMessage}"
+                    }
+                }
             });
 
+            // Configure the generation parameters for the AI model.
             var config = new GenerateContentConfig
             {
                 SystemInstruction = systemInstruction,
@@ -69,7 +95,11 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
                 MaxOutputTokens = 500
             };
 
-            var response = await _client.Models.GenerateContentAsync(_modelName, contents, config);
+            var response =
+                await _client.Models.GenerateContentAsync(
+                    _modelName,
+                    contents,
+                    config);
 
             return response.Text;
         }
@@ -80,9 +110,9 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
                 m.UserId.HasValue ? $"User: {m.Content}" : $"Assistant: {m.Content}"));
 
             var promptemplate = await _unitOfWork.PromptRepository.getPromptValueByName("summary_config");
-            promptemplate = promptemplate.Replace("{currentSummary ?? \"None\"}", currentSummary ?? "None")
+            promptemplate = promptemplate.Replace("{currentSummary}", currentSummary ?? "None")
                                          .Replace("{formattedMessages}", formattedMessages);
-                                         
+
 
             var contents = new List<Content>
             {
