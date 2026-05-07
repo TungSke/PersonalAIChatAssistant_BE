@@ -9,8 +9,7 @@ namespace WaifuAIAssistant.Application.Interfaces
         Task<ApiResponse<MessageListResponse>> GetMessagesFromConversation(
             int conversationId,
             int limit = 30,
-            long? beforeMessageId = null,
-            long? afterMessageId = null);
+            long? beforeMessageId = null);
         Task<ApiResponse<string>> CreateMessage(MessageRequest request);
         Task<ApiResponse<string>> DeleteMessage(int messageId);
     }

@@ -35,13 +35,9 @@ namespace WaifuAIAssistant.API.Controllers
 
     [FromQuery]
     [SwaggerParameter("Fetch messages with IDs less than this value (used for loading older messages when scrolling up)")]
-    long? beforeMessageId = null,
-
-    [FromQuery]
-    [SwaggerParameter("Fetch messages with IDs greater than this value (used for retrieving new messages)")]
-    long? afterMessageId = null)
+    long? beforeMessageId = null)
         {
-            if (beforeMessageId != null && afterMessageId != null)
+            if (beforeMessageId != null)
             {
                 return BadRequest("Cannot use both beforeMessageId and afterMessageId at the same time.");
             }
@@ -49,8 +45,7 @@ namespace WaifuAIAssistant.API.Controllers
             var response = await _service.GetMessagesFromConversation(
                 conversationId,
                 limit,
-                beforeMessageId,
-                afterMessageId
+                beforeMessageId
             );
 
             return Ok(response);

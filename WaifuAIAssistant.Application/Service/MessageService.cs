@@ -25,13 +25,23 @@ namespace WaifuAIAssistant.Application.Service
             _redisCacheService = redisCacheService;
         }
 
+        private readonly int _defaultLimit = 50;
+
         public async Task<ApiResponse<MessageListResponse>> GetMessagesFromConversation(
             int conversationId,
-            int limit = 30,
-            long? beforeMessageId = null,
-            long? afterMessageId = null)
+            int limit,
+            long? beforeMessageId = null)
         {
             var userId = await _jwtService.GetUserId();
+
+            if(limit > _defaultLimit)
+            {
+                return new ApiResponse<MessageListResponse>
+                {
+                    Success = false,
+                    Message = $"Limit cannot exceed {_defaultLimit}"
+                };
+            }
 
             var query = _unitOfWork.MessageRepository
                 .GetAll()
@@ -39,15 +49,7 @@ namespace WaifuAIAssistant.Application.Service
 
             List<Message> messages;
 
-            if (afterMessageId != null)
-            {
-                messages = await query
-                    .Where(x => x.Id > afterMessageId)
-                    .OrderBy(x => x.Id)
-                    .ToListAsync();
-            }
-
-            else if (beforeMessageId != null)
+            if (beforeMessageId != null)
             {
                 messages = await query
                     .Where(x => x.Id < beforeMessageId)
@@ -81,7 +83,7 @@ namespace WaifuAIAssistant.Application.Service
 
                 messages = messages.OrderBy(x => x.Id).ToList();
 
-                var responseCached = BuildResponse(messages, limit);
+                var responseCached = messages.Adapt<MessageListResponse>();
 
                 await _redisCacheService.SetAsync(
                     cacheKey,
@@ -96,7 +98,7 @@ namespace WaifuAIAssistant.Application.Service
                 };
             }
 
-            var response = BuildResponse(messages, limit);
+            var response = messages.Adapt<MessageListResponse>();
 
             return new ApiResponse<MessageListResponse>
             {
@@ -104,20 +106,6 @@ namespace WaifuAIAssistant.Application.Service
                 Data = response
             };
         }
-
-        private MessageListResponse BuildResponse(List<Message> messages, int limit)
-        {
-            var mapped = messages.Adapt<List<MessageResponse>>();
-
-            return new MessageListResponse
-            {
-                Messages = mapped,
-                FirstMessageId = mapped.FirstOrDefault()?.Id,
-                LastMessageId = mapped.LastOrDefault()?.Id,
-                HasMore = messages.Count == limit // chỉ đúng với before
-            };
-        }
-
 
         public async Task<ApiResponse<string>> CreateMessage(MessageRequest request)
         {
@@ -175,14 +163,14 @@ namespace WaifuAIAssistant.Application.Service
                 request.Content
             );
 
-           //Save AI message
-           var aiMessage = new Message
-           {
-               ConversationId = conversation.Id,
-               ModelCharacterId = character.Id,
-               Content = aiReply,
-               CreatedAt = DateTime.UtcNow
-           };
+            //Save AI message
+            var aiMessage = new Message
+            {
+                ConversationId = conversation.Id,
+                ModelCharacterId = character.Id,
+                Content = aiReply,
+                CreatedAt = DateTime.UtcNow
+            };
 
             await _unitOfWork.MessageRepository.AddAsync(aiMessage);
             await _unitOfWork.SaveChangesAsync();

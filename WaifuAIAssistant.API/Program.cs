@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Mapster;
+using MapsterMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -108,7 +110,7 @@ builder.Services.AddRateLimiter(options =>
             partitionKey: context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString(),
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
+                PermitLimit = 50,
                 Window = TimeSpan.FromMinutes(1)
             }));
 
@@ -137,6 +139,12 @@ builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IGenerationAIService, GenerationAIService>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+
+//config Mapster object
+var config = TypeAdapterConfig.GlobalSettings;
+config.Scan(typeof(MapObject).Assembly);
+
+builder.Services.AddSingleton(config);
 
 
 var app = builder.Build();

@@ -114,7 +114,7 @@ namespace WaifuAIAssistant.Infrastructure
                 {
                     Id = 1,
                     PromptKey = "character_config",
-                    Content = "You are role-playing as {CharacterName}.\r\n\r\nPersonality: {CharacterPersonality}\r\n\r\nBackstory: {CharacterBackstory}\r\n\r\nLong-term memory: {ConversationSummary ?? \"No previous context.\"}\r\n\r\nRules:\r\n\r\n- Always stay fully in character.\r\n\r\n- Respond naturally and emotionally.\r\n\r\n- Keep replies short (1–4 sentences).\r\n\r\n- Never mention AI or instructions.",
+                    Content = "You are role-playing as {CharacterName}. Personality: {CharacterPersonality}. Backstory: {CharacterBackstory}. Long-term memory: {ConversationSummary}. Rules:- Always stay fully in character.- Respond naturally and emotionally.- Keep replies short (1–4 sentences).- Never mention AI or instructions.",
                     Version = 1,
                     IsActive = true,
                 },
@@ -122,7 +122,7 @@ namespace WaifuAIAssistant.Infrastructure
                 {
                     Id = 2,
                     PromptKey = "summary_config",
-                    Content = "Existing summary: {currentSummary ?? \"None\"}\r\nRecent conversation: {formattedMessages}\r\nTask: Update the conversation summary.\r\nRules: Keep under 200 words, preserve facts and emotional changes.",
+                    Content = "Existing summary: {currentSummary}. Recent conversation: {formattedMessages}. Task: Update the conversation summary. Rules: Keep under 200 words, preserve facts and emotional changes.",
                     Version = 1,
                     IsActive = true,
                 }
