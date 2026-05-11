@@ -38,6 +38,15 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 
 
+// Add configuration from appsettings.json, environment variables, and user secrets
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json",
+        optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables()
+    .AddUserSecrets<Program>(optional: true);
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "Waifu AI API Swagger v1", Version = "v1", Description = "A full API for project" });
@@ -93,7 +102,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             //sqlOptions.ExecutionStrategy(d => new SqlServerRetryingExecutionStrategy(d, 15, TimeSpan.FromSeconds(30), null));
         })
     .EnableSensitiveDataLogging(false)
-    .EnableDetailedErrors(false));
+    .EnableDetailedErrors(false));  
 
 //add redis cache service
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>

@@ -8,9 +8,12 @@ namespace WaifuAIAssistant.Domain.Services
 {
     public interface IGoogleService
     {
-        Task SendEmail(string email, string subject, string body);
-        Task SendEmailWithOTP(string email, string subject);
-        Task<string> GenerateOtp();
-        Task<bool> VerifyOtp(string email, string otp);
+        Task SendEmailAsync(string email, string subject, string body);
+
+        Task SendOtpAsync(string email);
+
+        Task ResendOtpAsync(string email);
+
+        Task<bool> VerifyOtpAsync(string email, string otp);
     }
 }
