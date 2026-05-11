@@ -67,9 +67,12 @@ namespace WaifuAIAssistant.Application.Service
             newUser.Id = new int();
             newUser.CreatedAt = DateTime.UtcNow;
             newUser.UpdatedAt = DateTime.UtcNow;
+            newUser.Status = UserStatus.Inactive;
             newUser.PasswordHash = _passwordHandlerService.HashPassword(request.Password);
             await _unitOfWork.UserRepository.AddAsync(newUser);
             await _unitOfWork.SaveChangesAsync();
+
+            await _googleService.SendOtpAsync(newUser.Email);
 
             return new ApiResponse<RegisterResponse>
             {
@@ -80,9 +83,9 @@ namespace WaifuAIAssistant.Application.Service
 
         public async Task<ApiResponse<string>> VerifyAccount(VerifyAccountRequest request)
         {
-            var isOtpValid = await _googleService.VerifyOtp(request.Email, request.Otp);
+            var isOtpValid = await _googleService.VerifyOtpAsync(request.Email, request.Otp);
 
-            if (!isOtpValid)
+            if (isOtpValid == false)
             {
                 return new ApiResponse<string>
                 {
@@ -118,6 +121,15 @@ namespace WaifuAIAssistant.Application.Service
                 {
                     Success = false,
                     Message = "Email not found",
+                };
+            }
+
+            if(user.Status != UserStatus.Active)
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Account is not active, Please contact support via trinhsontung24102003@gmail.com",
                 };
             }
 

@@ -1,129 +1,251 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
+using System.Security.Cryptography;
+using WaifuAIAssistant.Domain.Services;
+using WaifuAIAssistant.Domain.ThirdPartyInterface;
 
 namespace WaifuAIAssistant.Infrastructure.ThirdParty
 {
-    public class GoogleService
+    public class GoogleService : IGoogleService
     {
-        private readonly IMemoryCache _cache;
+        private readonly IRedisCacheService _cache;
         private readonly IConfiguration _configuration;
 
-        public GoogleService(IMemoryCache cache)
+        private const int OTP_EXPIRED_MINUTES = 5;
+        private const int RESEND_COOLDOWN_SECONDS = 30;
+
+        public GoogleService(
+            IRedisCacheService cache,
+            IConfiguration configuration)
         {
             _cache = cache;
-
+            _configuration = configuration;
         }
-        public async Task SendEmail(string email, string subject, string body)
+
+        public async Task SendEmailAsync(string email, string subject, string body)
         {
             try
             {
-                var emailSender = _configuration["EmailSettings:SenderEmail"];
-                var emailSenderPassword = _configuration["EmailSettings:Password"];
+                var senderEmail = _configuration["EmailSettings:SenderEmail"];
 
-                if (string.IsNullOrEmpty(emailSender) || string.IsNullOrEmpty(emailSenderPassword))
+                var senderPassword = _configuration["EmailSettings:Password"];
+
+                if (string.IsNullOrWhiteSpace(senderEmail) ||
+                    string.IsNullOrWhiteSpace(senderPassword))
                 {
-                    throw new Exception("Email sender credentials are not configured.");
+                    throw new InvalidOperationException(
+                        "Email configuration is missing.");
                 }
 
-                MailMessage mail = new MailMessage
+                using var mail = new MailMessage
                 {
-                    From = new MailAddress("support@nutridiet.com", "NutriDiet Support Team"),
+                    From = new MailAddress(
+                        senderEmail,
+                        "Waifu AI Support Team"),
+
                     Subject = subject,
-                    Body = body ?? "No content available",
+                    Body = body,
                     IsBodyHtml = true
                 };
+
                 mail.To.Add(email);
 
-                using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
+                using var smtp = new SmtpClient("smtp.gmail.com", 587)
                 {
-                    smtp.UseDefaultCredentials = false;
-                    smtp.Credentials = new NetworkCredential(emailSender, emailSenderPassword);
-                    smtp.EnableSsl = true;
-                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    UseDefaultCredentials = false,
 
-                    await smtp.SendMailAsync(mail);
-                }
+                    Credentials = new NetworkCredential(
+                        senderEmail,
+                        senderPassword),
+
+                    EnableSsl = true,
+
+                    DeliveryMethod = SmtpDeliveryMethod.Network
+                };
+
+                await smtp.SendMailAsync(mail);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error when sending email: " + ex.Message);
+                throw new Exception(
+                    $"Failed to send email: {ex.Message}");
             }
         }
 
-
-        public async Task SendEmailWithOTP(string email, string subject)
+        public async Task SendOtpAsync(string email)
         {
-            try
+            ValidateEmail(email);
+
+            email = NormalizeEmail(email);
+
+            var cooldownKey = GetCooldownKey(email);
+
+            // Check resend cooldown
+            var cooldownExists =
+                await _cache.GetAsync<string>(cooldownKey);
+
+            if (!string.IsNullOrWhiteSpace(cooldownExists))
             {
-                var otp = GenerateOtp();
-
-                _cache.Set(email, otp, TimeSpan.FromMinutes(5));
-
-                // Cải thiện nội dung email
-                var emailContent = $@"
-                            <p>Xin chào {email},</p>
-                            <p>Bạn nhận được email này vì đã yêu cầu mã OTP để đăng nhập vào tài khoản NutriDiet của mình.</p>
-                            <p>Mã OTP của bạn là: <strong>{otp}</strong></p>
-                            <p>Mã này có hiệu lực trong 5 phút.</p>
-                            <p>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email.</p>
-                            <p>Trân trọng,</p>
-                            <p>Đội ngũ hỗ trợ NutriDiet</p>
-                            <p>Website: https://www.nutridiet.live/</p>
-                            ";
-
-                var emailSender = Environment.GetEnvironmentVariable("EMAIL_SENDER");
-                var emailSenderPassword = Environment.GetEnvironmentVariable("EMAIL_SENDER_PASSWORD");
-
-                // Sử dụng tên miền riêng (thay "no-reply@yourdomain.com" bằng tên miền của bạn)
-                MailMessage mail = new MailMessage
-                {
-                    From = new MailAddress("support@nutridiet.com", "NutriDiet Support Team"),
-                    Subject = subject,
-                    Body = emailContent,
-                    IsBodyHtml = true
-                };
-                mail.To.Add(email);
-
-                // Gửi email qua SMTP
-                using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
-                {
-                    smtp.UseDefaultCredentials = false;
-                    smtp.EnableSsl = true;
-                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
-                    smtp.Credentials = new NetworkCredential(emailSender, emailSenderPassword);
-
-                    await smtp.SendMailAsync(mail);
-                }
+                throw new Exception(
+                    "Please wait before requesting another OTP.");
             }
-            catch (Exception ex)
+
+            var otp = GenerateOtp();
+
+            var otpKey = GetOtpKey(email);
+
+            // Save OTP
+            await _cache.SetAsync(
+                otpKey,
+                otp,
+                TimeSpan.FromMinutes(OTP_EXPIRED_MINUTES));
+
+            // Save cooldown
+            await _cache.SetAsync(
+                cooldownKey,
+                "1",
+                TimeSpan.FromSeconds(RESEND_COOLDOWN_SECONDS));
+
+            var emailBody =
+                BuildOtpEmailTemplate(email, otp);
+
+            await SendEmailAsync(
+                email,
+                "Your OTP for Waifu AI Login",
+                emailBody);
+
+            Console.WriteLine($"OTP GENERATED: {otp}");
+            Console.WriteLine($"OTP KEY: {otpKey}");
+        }
+
+        public async Task ResendOtpAsync(string email)
+        {
+            ValidateEmail(email);
+
+            email = NormalizeEmail(email);
+
+            var otpKey = GetOtpKey(email);
+
+            // Remove old OTP
+            await _cache.RemoveAsync(otpKey);
+
+            // Generate new OTP
+            await SendOtpAsync(email);
+        }
+
+        public async Task<bool> VerifyOtpAsync(
+            string email,
+            string otp)
+        {
+            ValidateEmail(email);
+
+            if (string.IsNullOrWhiteSpace(otp))
             {
-                throw new Exception("Error when sending email: " + ex.Message);
+                return false;
+            }
+
+            email = NormalizeEmail(email);
+
+            var otpKey = GetOtpKey(email);
+
+            var cachedOtp =
+                await _cache.GetAsync<string>(otpKey);
+
+            Console.WriteLine($"OTP KEY: {otpKey}");
+            Console.WriteLine($"CACHED OTP: {cachedOtp}");
+            Console.WriteLine($"INPUT OTP: {otp}");
+
+            if (string.IsNullOrWhiteSpace(cachedOtp))
+            {
+                return false;
+            }
+
+            var isValid =
+                cachedOtp.Trim() == otp.Trim();
+
+            if (!isValid)
+            {
+                return false;
+            }
+
+            // Remove OTP after verify success
+            await _cache.RemoveAsync(otpKey);
+
+            return true;
+        }
+
+        private static string GenerateOtp()
+        {
+            return RandomNumberGenerator
+                .GetInt32(100000, 999999)
+                .ToString();
+        }
+
+        private static void ValidateEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentException(
+                    "Email is required.");
             }
         }
 
-        public async Task<bool> VerifyOtp(string email, string otp)
+        private static string NormalizeEmail(string email)
         {
-            var cachedOtp = _cache.Get(email) as string;
-
-            Console.WriteLine($"Cached OTP: {cachedOtp} for email: {email}");
-            Console.WriteLine($"Provided OTP: {otp}");
-
-            if (!string.IsNullOrEmpty(cachedOtp) && cachedOtp.Equals(otp))
-            {
-                _cache.Remove(email);
-                return true;
-            }
-
-            return false;
+            return email
+                .Trim()
+                .ToLowerInvariant();
         }
 
-
-        private string GenerateOtp()
+        private static string GetOtpKey(string email)
         {
-            var random = new Random();
-            return random.Next(100000, 999999).ToString();
+            return $"otp:{email}";
+        }
+
+        private static string GetCooldownKey(string email)
+        {
+            return $"otp_cooldown:{email}";
+        }
+
+        private static string BuildOtpEmailTemplate(
+            string email,
+            string otp)
+        {
+            return $@"
+                <div style='font-family: Arial, sans-serif'>
+                    <h2>Waifu AI Login Verification</h2>
+
+                    <p>Hello {email},</p>
+
+                    <p>
+                        You requested an OTP to login to your account.
+                    </p>
+
+                    <p>Your OTP code is:</p>
+
+                    <h1 style='color: #4F46E5'>
+                        {otp}
+                    </h1>
+
+                    <p>
+                        This OTP will expire in
+                        {OTP_EXPIRED_MINUTES} minutes.
+                    </p>
+
+                    <p>
+                        If you did not request this OTP,
+                        please ignore this email.
+                    </p>
+
+                    <br />
+
+                    <p>Best regards,</p>
+
+                    <p>
+                        Waifu AI Support Team
+                    </p>
+                </div>";
         }
     }
 }

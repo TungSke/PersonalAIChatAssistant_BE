@@ -44,7 +44,7 @@ namespace WaifuAIAssistant.Application.Service
             }
 
             var query = _unitOfWork.MessageRepository
-                .GetAll()
+                .GetAll().Include(x => x.ModelsCharacter)
                 .Where(x => x.ConversationId == conversationId);
 
             List<Message> messages;
@@ -107,7 +107,7 @@ namespace WaifuAIAssistant.Application.Service
             };
         }
 
-        public async Task<ApiResponse<string>> CreateMessage(MessageRequest request)
+        public async Task<ApiResponse<MessageResponse>> CreateMessage(MessageRequest request)
         {
             var userId = await _jwtService.GetUserId();
 
@@ -116,7 +116,7 @@ namespace WaifuAIAssistant.Application.Service
                 .FirstOrDefaultAsync(x => x.Id == request.ConversationId);
 
             if (conversation == null)
-                return new ApiResponse<string>
+                return new ApiResponse<MessageResponse>
                 {
                     Success = false,
                     Message = "Conversation not found"
@@ -140,7 +140,7 @@ namespace WaifuAIAssistant.Application.Service
                 .FirstOrDefaultAsync(x => x.Id == conversation.WaifuId);
 
             if (character == null)
-                return new ApiResponse<string>
+                return new ApiResponse<MessageResponse>
                 {
                     Success = false,
                     Message = "Conversation not found"
@@ -175,15 +175,13 @@ namespace WaifuAIAssistant.Application.Service
             await _unitOfWork.MessageRepository.AddAsync(aiMessage);
             await _unitOfWork.SaveChangesAsync();
 
-            //Update summary 
+            //Update summary if message count reach the threshold (every 20 messages)
             var messageCount = await _unitOfWork.MessageRepository
                                     .GetAll()
                                     .CountAsync(x => x.ConversationId == conversation.Id);
 
             if (messageCount % 20 == 0)
             {
-
-
                 var newSummary = await _generationAIService.SummarizeConversation(
                     conversation.Summary,
                     recentMessages
@@ -195,10 +193,11 @@ namespace WaifuAIAssistant.Application.Service
                 await _unitOfWork.SaveChangesAsync();
             }
 
-            return new ApiResponse<string>
+            return new ApiResponse<MessageResponse>
             {
                 Success = true,
-                Message = aiReply
+                Message = "Send message successfully!",
+                Data = aiMessage.Adapt<MessageResponse>()
             };
         }
 
@@ -224,6 +223,47 @@ namespace WaifuAIAssistant.Application.Service
                 {
                     Success = true,
                     Message = "Delete success!"
+                };
+            }
+            catch (Exception e)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = e.Message,
+                    Data = e.InnerException?.ToString()
+                };
+            }
+        }
+
+        public async Task<ApiResponse<string>> ExportConversationtoPDF(int conversationId)
+        {
+            try
+            {
+                var userId = await _jwtService.GetUserId();
+                var conversationExisted = await _unitOfWork.ConversationRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Id == conversationId && x.UserId == userId);
+                if (conversationExisted == null)
+                {
+                    return new ApiResponse<string>
+                    {
+                        Success = false,
+                        Message = "Conversation not found"
+                    };
+                }
+                var messages = await _unitOfWork.MessageRepository
+                    .GetAll()
+                    .Where(x => x.ConversationId == conversationId)
+                    .OrderBy(x => x.CreatedAt)
+                    .ToListAsync();
+
+
+
+                return new ApiResponse<string>
+                {
+                    Success = true,
+                    Data = "exportContent"
                 };
             }
             catch (Exception e)
