@@ -15,6 +15,7 @@ namespace WaifuAIAssistant.API
             config.NewConfig<List<Message>, MessageListResponse>()
                     .Map(dest => dest.FirstMessageId, src => src.FirstOrDefault().Id)
                     .Map(dest => dest.ModelId, src => src.FirstOrDefault(x => x.ModelCharacterId != null).ModelCharacterId)
+                    .Map(dest => dest.ModelName, src => src.FirstOrDefault(x => x.ModelCharacterId != null).ModelsCharacter.Name)
                     .Map(dest => dest.ModelAvatarUrl, src => src.FirstOrDefault(x => x.ModelCharacterId != null).ModelsCharacter.AvatarUrl)
                     .Map(dest => dest.Messages, src => src.Adapt<List<MessageResponse>>());
         }

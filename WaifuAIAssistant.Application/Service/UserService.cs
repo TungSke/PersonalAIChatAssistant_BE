@@ -87,18 +87,13 @@ namespace WaifuAIAssistant.Application.Service
 
             if (isOtpValid == false)
             {
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid OTP",
-                    Errors = new List<string> { "Invalid OTP" }
-                };
+                throw new UnauthorizedAccessException("Invalid OTP");
             }
 
             var user = await findUserByEmail(request.Email);
             if (user == null)
             {
-                return new ApiResponse<string>{ Success = false, Message = "Invalid OTP", Errors = new List<string> { "Invalid OTP" } };
+                throw new KeyNotFoundException("Email not found");
             }
 
             user.Status = UserStatus.Active;
@@ -117,20 +112,12 @@ namespace WaifuAIAssistant.Application.Service
 
             if (user == null)
             {
-                return new ApiResponse<LoginResponse>
-                {
-                    Success = false,
-                    Message = "Email not found",
-                };
+                throw new KeyNotFoundException("Email not found");
             }
 
             if(user.Status != UserStatus.Active)
             {
-                return new ApiResponse<LoginResponse>
-                {
-                    Success = false,
-                    Message = "Account is not active, Please contact support via trinhsontung24102003@gmail.com",
-                };
+                throw new Exception("Account is not active");
             }
 
             var passwordVerificationResult =  _passwordHandlerService.VerifyPassword(user.PasswordHash, request.Password);
@@ -164,12 +151,7 @@ namespace WaifuAIAssistant.Application.Service
             var user = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.RefreshToken == request.Token);
             if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid refresh token",
-                    Errors = new List<string> { "Invalid refresh token" }
-                };
+                throw new UnauthorizedAccessException("Invalid or expired refresh token");
             }
             // Generate new JWT token
             var jwtToken = await _jWTService.GenerateJwtToken(user);
