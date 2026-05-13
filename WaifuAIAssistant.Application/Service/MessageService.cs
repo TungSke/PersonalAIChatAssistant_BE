@@ -34,7 +34,7 @@ namespace WaifuAIAssistant.Application.Service
         {
             var userId = await _jwtService.GetUserId();
 
-            if(limit > _defaultLimit)
+            if (limit > _defaultLimit)
             {
                 return new ApiResponse<MessageListResponse>
                 {
@@ -45,7 +45,7 @@ namespace WaifuAIAssistant.Application.Service
 
             var query = _unitOfWork.MessageRepository
                 .GetAll().Include(x => x.ModelsCharacter)
-                .Where(x => x.ConversationId == conversationId);
+                .Where(x => x.ConversationId == conversationId && x.UserId == userId);
 
             List<Message> messages;
 
@@ -87,7 +87,7 @@ namespace WaifuAIAssistant.Application.Service
 
                 await _redisCacheService.SetAsync(
                     cacheKey,
-                    responseCached, 
+                    responseCached,
                     TimeSpan.FromSeconds(30)
                 );
 
@@ -109,96 +109,119 @@ namespace WaifuAIAssistant.Application.Service
 
         public async Task<ApiResponse<MessageResponse>> CreateMessage(MessageRequest request)
         {
-            var userId = await _jwtService.GetUserId();
+            try
+            {
+                var userId = await _jwtService.GetUserId();
 
-            var conversation = await _unitOfWork.ConversationRepository
-                .GetAll()
-                .FirstOrDefaultAsync(x => x.Id == request.ConversationId);
+                // Validate conversation exists and belongs to current user
+                var conversation = await _unitOfWork.ConversationRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Id == request.ConversationId && x.UserId == userId);
 
-            if (conversation == null)
-                return new ApiResponse<MessageResponse>
+                if (conversation == null)
                 {
-                    Success = false,
-                    Message = "Conversation not found"
-                };
+                    return new ApiResponse<MessageResponse>
+                    {
+                        Success = false,
+                        Message = "Conversation not found"
+                    };
+                }
 
-            // 1️⃣ Save user message
-            var userMessage = new Message
-            {
-                ConversationId = conversation.Id,
-                UserId = userId,
-                Content = request.Content,
-                CreatedAt = DateTime.UtcNow
-            };
+                // Validate character exists before calling AI
+                var character = await _unitOfWork.ModelRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Id == conversation.WaifuId);
 
-            await _unitOfWork.MessageRepository.AddAsync(userMessage);
-            await _unitOfWork.SaveChangesAsync();
-
-            // get the character want to use for generating AI reply
-            var character = await _unitOfWork.ModelRepository
-                .GetAll()
-                .FirstOrDefaultAsync(x => x.Id == conversation.WaifuId);
-
-            if (character == null)
-                return new ApiResponse<MessageResponse>
+                if (character == null)
                 {
-                    Success = false,
-                    Message = "Conversation not found"
-                };
+                    return new ApiResponse<MessageResponse>
+                    {
+                        Success = false,
+                        Message = "Character not found"
+                    };
+                }
 
-            // Get last 20 messages
-            var recentMessages = await _unitOfWork.MessageRepository
-                .GetAll()
-                .Where(x => x.ConversationId == conversation.Id)
-                .OrderByDescending(x => x.Id)
-                .Take(20)
-                .OrderBy(x => x.Id)
-                .ToListAsync();
+                // Get recent messages for context before calling AI
+                var recentMessages = await _unitOfWork.MessageRepository
+                    .GetAll()
+                    .Where(x => x.ConversationId == conversation.Id)
+                    .OrderByDescending(x => x.Id)
+                    .Take(20)
+                    .OrderBy(x => x.Id)
+                    .ToListAsync();
 
-            //Generate AI reply
-            var aiReply = await _generationAIService.GenerateReply(
-                conversation,
-                character,
-                recentMessages,
-                request.Content
-            );
-
-            //Save AI message
-            var aiMessage = new Message
-            {
-                ConversationId = conversation.Id,
-                ModelCharacterId = character.Id,
-                Content = aiReply,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _unitOfWork.MessageRepository.AddAsync(aiMessage);
-            await _unitOfWork.SaveChangesAsync();
-
-            //Update summary if message count reach the threshold (every 20 messages)
-            var messageCount = await _unitOfWork.MessageRepository
-                                    .GetAll()
-                                    .CountAsync(x => x.ConversationId == conversation.Id);
-
-            if (messageCount % 20 == 0)
-            {
-                var newSummary = await _generationAIService.SummarizeConversation(
-                    conversation.Summary,
-                    recentMessages
+                // Call AI first before saving anything to DB
+                // If AI fails, nothing gets saved and we return error immediately
+                var aiReply = await _generationAIService.GenerateReply(
+                    conversation,
+                    character,
+                    recentMessages,
+                    request.Content
                 );
 
-                conversation.Summary = newSummary;
+                // AI succeeded — now save both messages in a single transaction
+                // If DB fails here, both user message and AI reply are rolled back together
+                Message aiMessage = null;
 
-                await _unitOfWork.ConversationRepository.Update(conversation);
-                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.ExecuteInTransactionAsync(async () =>
+                {
+                    // Save user message
+                    var userMessage = new Message
+                    {
+                        ConversationId = conversation.Id,
+                        UserId = userId,
+                        Content = request.Content,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _unitOfWork.MessageRepository.AddAsync(userMessage);
+
+                    // Save AI reply
+                    aiMessage = new Message
+                    {
+                        ConversationId = conversation.Id,
+                        ModelCharacterId = character.Id,
+                        Content = aiReply,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _unitOfWork.MessageRepository.AddAsync(aiMessage);
+
+                    conversation.UpdatedAt = DateTime.UtcNow;
+
+                    // Every 20 messages, summarize the conversation to keep context window short
+                    var messageCount = await _unitOfWork.MessageRepository
+                        .GetAll()
+                        .CountAsync(x => x.ConversationId == conversation.Id);
+
+                    if (messageCount % 20 == 0)
+                    {
+                        var newSummary = await _generationAIService.SummarizeConversation(
+                            conversation.Summary,
+                            recentMessages
+                        );
+
+                        conversation.Summary = newSummary;
+                        await _unitOfWork.ConversationRepository.Update(conversation);
+                    }
+                });
+
+                return new ApiResponse<MessageResponse>
+                {
+                    Success = true,
+                    Message = "Send message successfully!",
+                    Data = aiMessage.Adapt<MessageResponse>()
+                };
             }
-
-            return new ApiResponse<MessageResponse>
+            catch (Exception ex)
             {
-                Success = true,
-                Message = "Send message successfully!",
-                Data = aiMessage.Adapt<MessageResponse>()
-            };
+                // No manual rollback needed — ExecuteInTransactionAsync handles it internally
+                return new ApiResponse<MessageResponse>
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
         }
 
         public async Task<ApiResponse<string>> DeleteMessage(int messageId)

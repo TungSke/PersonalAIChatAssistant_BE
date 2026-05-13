@@ -28,7 +28,6 @@ builder.Services.AddControllers(opts =>
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.KebabCaseLower; //make all json formats become kebab case
     });
 
 

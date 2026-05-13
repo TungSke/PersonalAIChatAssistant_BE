@@ -4,6 +4,7 @@ namespace WaifuAIAssistant.Domain
 {
     public interface IUnitOfWork
     {
+        Task ExecuteInTransactionAsync(Func<Task> operation);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();

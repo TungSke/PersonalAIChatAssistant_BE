@@ -17,7 +17,7 @@ namespace WaifuAIAssistant.Infrastructure.ThirdParty
 
         public GenerationAIService(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
-            _client = new Client(apiKey: configuration["GenerativeAI:AIAPIKey2"]);
+            _client = new Client(apiKey: configuration["GenerativeAI:AIAPIKey"]);
             _modelName = configuration["GenerativeAI:ModelName"] ?? "gemini-2.0-flash";
             _unitOfWork = unitOfWork;
         }
