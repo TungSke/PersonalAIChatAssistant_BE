@@ -33,7 +33,7 @@ namespace WaifuAIAssistant.Application.Service
             long? beforeMessageId = null)
         {
             var userId = await _jwtService.GetUserId();
-
+            var response = new MessageListResponse();
             if (limit > _defaultLimit)
             {
                 return new ApiResponse<MessageListResponse>
@@ -43,9 +43,17 @@ namespace WaifuAIAssistant.Application.Service
                 };
             }
 
+            var conversationExisted = await _unitOfWork.ConversationRepository
+                .GetAll()
+                .FirstOrDefaultAsync(x => x.Id == conversationId && x.UserId == userId);
+
+            if (conversationExisted == null) {
+                throw new KeyNotFoundException("Conversation not found!");
+            }
+
             var query = _unitOfWork.MessageRepository
                 .GetAll().Include(x => x.ModelsCharacter)
-                .Where(x => x.ConversationId == conversationId && x.UserId == userId);
+                .Where(x => x.ConversationId == conversationId);
 
             List<Message> messages;
 
@@ -64,15 +72,16 @@ namespace WaifuAIAssistant.Application.Service
             {
                 var cacheKey = $"chat:{conversationId}:latest:{limit}";
 
-                var cached = await _redisCacheService
+                var responseCached = await _redisCacheService
                     .GetAsync<MessageListResponse>(cacheKey);
 
-                if (cached != null)
+                if (responseCached != null)
                 {
                     return new ApiResponse<MessageListResponse>
                     {
                         Success = true,
-                        Data = cached
+                        Message = "Data from cache",
+                        Data = responseCached
                     };
                 }
 
@@ -83,22 +92,22 @@ namespace WaifuAIAssistant.Application.Service
 
                 messages = messages.OrderBy(x => x.Id).ToList();
 
-                var responseCached = messages.Adapt<MessageListResponse>();
+                response = messages.Adapt<MessageListResponse>();
 
                 await _redisCacheService.SetAsync(
                     cacheKey,
-                    responseCached,
+                    response,
                     TimeSpan.FromSeconds(30)
                 );
 
                 return new ApiResponse<MessageListResponse>
                 {
                     Success = true,
-                    Data = responseCached
+                    Data = response
                 };
             }
 
-            var response = messages.Adapt<MessageListResponse>();
+            response = messages.Adapt<MessageListResponse>();
 
             return new ApiResponse<MessageListResponse>
             {
@@ -120,11 +129,7 @@ namespace WaifuAIAssistant.Application.Service
 
                 if (conversation == null)
                 {
-                    return new ApiResponse<MessageResponse>
-                    {
-                        Success = false,
-                        Message = "Conversation not found"
-                    };
+                    throw new KeyNotFoundException("Conversation not found or does not belong to user");
                 }
 
                 // Validate character exists before calling AI
@@ -134,11 +139,7 @@ namespace WaifuAIAssistant.Application.Service
 
                 if (character == null)
                 {
-                    return new ApiResponse<MessageResponse>
-                    {
-                        Success = false,
-                        Message = "Character not found"
-                    };
+                    throw new KeyNotFoundException("Character not found for this conversation");
                 }
 
                 // Get recent messages for context before calling AI
@@ -234,11 +235,7 @@ namespace WaifuAIAssistant.Application.Service
                     .FirstOrDefaultAsync(x => x.Id == messageId && x.UserId == userId);
                 if (messageExisted == null)
                 {
-                    return new ApiResponse<string>
-                    {
-                        Success = false,
-                        Message = "Message not found"
-                    };
+                    throw new KeyNotFoundException("Message not found or does not belong to user");
                 }
                 await _unitOfWork.MessageRepository.Remove(messageExisted);
                 await _unitOfWork.SaveChangesAsync();

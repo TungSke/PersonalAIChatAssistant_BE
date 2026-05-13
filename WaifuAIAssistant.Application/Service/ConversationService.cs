@@ -89,11 +89,7 @@ namespace WaifuAIAssistant.Application.Service
             }
             catch (Exception e)
             {
-                return new ApiResponse<ConversationRequest>
-                {
-                    Success = false,
-                    Message = e.Message
-                };
+                throw new Exception($"Failed to create conversation: {e.Message}");
             }
         }
 
