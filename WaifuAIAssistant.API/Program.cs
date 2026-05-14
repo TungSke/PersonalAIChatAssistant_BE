@@ -1,5 +1,5 @@
 ﻿using Mapster;
-using MapsterMapper;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +35,7 @@ builder.Services.AddControllers(opts =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
-
+builder.Services.AddHealthChecks();
 
 // Add configuration from appsettings.json, environment variables, and user secrets
 builder.Configuration
@@ -84,24 +84,27 @@ builder.Services.AddAuthentication(options =>
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
+{
+    var connectionString =
         builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? Environment.GetEnvironmentVariable("DefaultConnection"),
+        ?? Environment.GetEnvironmentVariable("DefaultConnection");
 
-        sqlServerOptionsAction: sqlOptions =>
-        {
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 15,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorNumbersToAdd: null);
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null);
 
-            // 3 option BẮT BUỘC phải có với Azure SQL (rất nhiều người bỏ quên)
-            //sqlOptions.CommandTimeout(60);
-            //sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "dbo");
-            //sqlOptions.ExecutionStrategy(d => new SqlServerRetryingExecutionStrategy(d, 15, TimeSpan.FromSeconds(30), null));
-        })
-    .EnableSensitiveDataLogging(false)
-    .EnableDetailedErrors(false));  
+        sqlOptions.CommandTimeout(60);
+    });
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
 
 //add redis cache service
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -173,5 +176,26 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add health check endpoint
+app.UseHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(entry => new
+            {
+                name = entry.Key,
+                status = entry.Value.Status.ToString(),
+                exception = entry.Value.Exception?.Message,
+                duration = entry.Value.Duration.ToString()
+            })
+        };
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+    }
+});
 
 app.Run();
