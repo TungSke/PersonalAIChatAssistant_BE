@@ -180,6 +180,7 @@ app.MapControllers();
 // Add health check endpoint
 app.UseHealthChecks("/health", new HealthCheckOptions
 {
+    
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
