@@ -46,11 +46,6 @@ namespace WaifuAIAssistant.Application.Service
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
 
-            if(conversations == null || conversations.Count == 0)
-            {
-                throw new KeyNotFoundException("No conversations found for the user.");
-            }
-
             var response = conversations.Adapt<List<ConversationResponse>>();
             if(userId != 0)
             {
@@ -71,11 +66,17 @@ namespace WaifuAIAssistant.Application.Service
             try
             {
                 var userId = await _jwtService.GetUserId();
-                var waifuName = await _unitOfWork.ModelRepository.FindAsync(request.WaifuId);
+                var modelCharacter = await _unitOfWork.ModelRepository.FindAsync(request.WaifuId);
+
+                var conversationExisted = await _unitOfWork.ConversationRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == userId && x.ModelCharacterId == request.WaifuId);
+                if (conversationExisted != null)
+                {
+                    throw new Exception("Conversation already exists!");
+                }
 
                 var createCon = request.Adapt<Conversation>();
                 createCon.UserId = userId;
-                createCon.Title = string.IsNullOrEmpty(request.Title) ? waifuName.Name : request.Title;
+                createCon.Title = string.IsNullOrEmpty(request.Title) ? modelCharacter.Name : request.Title;
                 createCon.Status = ConversationStatus.Active;
 
                 await _unitOfWork.ConversationRepository.AddAsync(createCon);

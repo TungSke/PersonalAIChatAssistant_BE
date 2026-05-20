@@ -134,6 +134,9 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<int>("ModelCharacterId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -157,17 +160,14 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("WaifuId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ModelCharacterId");
 
-                    b.HasIndex("WaifuId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Conversations");
 
@@ -176,12 +176,12 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         {
                             Id = 1,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ModelCharacterId = 1,
                             Status = 1,
                             Summary = "",
                             Title = "Test",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserId = 1,
-                            WaifuId = 1
+                            UserId = 1
                         });
                 });
 
@@ -320,7 +320,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Content = "You are role-playing as {CharacterName}.\r\n\r\nPersonality: {CharacterPersonality}\r\n\r\nBackstory: {CharacterBackstory}\r\n\r\nLong-term memory: {ConversationSummary ?? \"No previous context.\"}\r\n\r\nRules:\r\n\r\n- Always stay fully in character.\r\n\r\n- Respond naturally and emotionally.\r\n\r\n- Keep replies short (1–4 sentences).\r\n\r\n- Never mention AI or instructions.",
+                            Content = "You are role-playing as {CharacterName}. Personality: {CharacterPersonality}. Backstory: {CharacterBackstory}. Long-term memory: {ConversationSummary}. Rules:- Always stay fully in character.- Respond naturally and emotionally.- Keep replies short (1–4 sentences).- Never mention AI or instructions.",
                             IsActive = true,
                             PromptKey = "character_config",
                             Version = 1
@@ -328,7 +328,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            Content = "Existing summary: {currentSummary ?? \"None\"}\r\nRecent conversation: {formattedMessages}\r\nTask: Update the conversation summary.\r\nRules: Keep under 200 words, preserve facts and emotional changes.",
+                            Content = "Existing summary: {currentSummary}. Recent conversation: {formattedMessages}. Task: Update the conversation summary. Rules: Keep under 200 words, preserve facts and emotional changes.",
                             IsActive = true,
                             PromptKey = "summary_config",
                             Version = 1
@@ -407,19 +407,21 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.Conversation", b =>
                 {
+                    b.HasOne("WaifuAIAssistant.Domain.Entities.ModelsCharacter", "ModelsCharacter")
+                        .WithMany()
+                        .HasForeignKey("ModelCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("WaifuAIAssistant.Domain.Entities.User", "User")
                         .WithMany("Conversations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WaifuAIAssistant.Domain.Entities.ModelsCharacter", "Waifu")
-                        .WithMany()
-                        .HasForeignKey("WaifuId");
+                    b.Navigation("ModelsCharacter");
 
                     b.Navigation("User");
-
-                    b.Navigation("Waifu");
                 });
 
             modelBuilder.Entity("WaifuAIAssistant.Domain.Entities.Message", b =>

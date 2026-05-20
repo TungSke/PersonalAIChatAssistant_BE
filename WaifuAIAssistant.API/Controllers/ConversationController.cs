@@ -36,7 +36,7 @@ namespace WaifuAIAssistant.API.Controllers
             {
                 return BadRequest(Response);
             }
-            return Ok(reponse);
+            return CreatedAtAction(nameof(GetAllConversation), new { reponse.Data });
         }
 
         [HttpDelete]

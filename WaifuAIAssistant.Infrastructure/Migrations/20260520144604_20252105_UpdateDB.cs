@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WaifuAIAssistant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class _20252105_UpdateDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -98,7 +98,7 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    WaifuId = table.Column<int>(type: "int", nullable: true),
+                    ModelCharacterId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Summary = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SummaryAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
@@ -110,10 +110,11 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Conversations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Conversations_ModelsCharacters_WaifuId",
-                        column: x => x.WaifuId,
+                        name: "FK_Conversations_ModelsCharacters_ModelCharacterId",
+                        column: x => x.ModelCharacterId,
                         principalTable: "ModelsCharacters",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Conversations_Users_UserId",
                         column: x => x.UserId,
@@ -168,8 +169,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 columns: new[] { "Id", "Content", "IsActive", "PromptKey", "Version" },
                 values: new object[,]
                 {
-                    { 1, "You are a character named {CharacterName}. You have the following backstory: {CharacterBackstory}. You have the following personality: {CharacterPersonality}. You are currently in a conversation with a user named {UserName}. The user has the following information: {UserInfo}. The user has the following preferences: {UserPreferences}. The user has the following conversation history: {ConversationHistory}. The user has the following context: {Context}. You should respond to the user in a way that is consistent with your character, backstory, and personality. You should also take into account the user's information, preferences, conversation history, and context. You should also use the user's name when addressing them. You should also use the user's preferred pronouns when referring to them. You should also use the user's preferred language when responding to them. You should also use the user's preferred tone when responding to them. You should also use the user's preferred style when responding to them. You should also use the user's preferred format when responding to them. You should also use the user's preferred length when responding to them. You should also use the user's preferred level of detail when responding to them. You should also use the user's preferred level of formality when responding to them. You should also use the user's preferred level of politeness when responding to them. You should also use the user's preferred level of empathy when responding to them. You should also use the user's preferred level of humor when responding to them. You should also use the user's preferred level of creativity when responding to them. You should also use the user's preferred level of intelligence when responding to them. You should also use the user's preferred level of knowledge when responding to them. You should also use the user's preferred level of expertise when responding to them.", true, "Character_config", 1 },
-                    { 2, "Existing summary: {currentSummary ?? \"None\"}\r\nRecent conversation: {formattedMessages}\r\nTask: Update the conversation summary.\r\nRules: Keep under 200 words, preserve facts and emotional changes.", true, "Summary_config", 1 }
+                    { 1, "You are role-playing as {CharacterName}. Personality: {CharacterPersonality}. Backstory: {CharacterBackstory}. Long-term memory: {ConversationSummary}. Rules:- Always stay fully in character.- Respond naturally and emotionally.- Keep replies short (1–4 sentences).- Never mention AI or instructions.", true, "character_config", 1 },
+                    { 2, "Existing summary: {currentSummary}. Recent conversation: {formattedMessages}. Task: Update the conversation summary. Rules: Keep under 200 words, preserve facts and emotional changes.", true, "summary_config", 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -194,8 +195,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Conversations",
-                columns: new[] { "Id", "Status", "Summary", "Title", "UserId", "WaifuId" },
-                values: new object[] { 1, 1, "", "Test", 1, 1 });
+                columns: new[] { "Id", "ModelCharacterId", "Status", "Summary", "Title", "UserId" },
+                values: new object[] { 1, 1, 1, "", "Test", 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CharacterEmotions_CharacterId",
@@ -215,14 +216,14 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Conversations_ModelCharacterId",
+                table: "Conversations",
+                column: "ModelCharacterId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Conversations_UserId",
                 table: "Conversations",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Conversations_WaifuId",
-                table: "Conversations",
-                column: "WaifuId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_ConversationId",

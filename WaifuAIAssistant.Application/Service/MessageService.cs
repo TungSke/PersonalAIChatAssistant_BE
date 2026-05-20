@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using WaifuAIAssistant.Application.DTOs.Request;
 using WaifuAIAssistant.Application.DTOs.Response;
@@ -32,8 +33,14 @@ namespace WaifuAIAssistant.Application.Service
             int limit,
             long? beforeMessageId = null)
         {
+
             var userId = await _jwtService.GetUserId();
-            var response = new MessageListResponse();
+
+            if (limit <= 0)
+            {
+                limit = _defaultLimit;
+            }
+
             if (limit > _defaultLimit)
             {
                 return new ApiResponse<MessageListResponse>
@@ -43,78 +50,85 @@ namespace WaifuAIAssistant.Application.Service
                 };
             }
 
-            var conversationExisted = await _unitOfWork.ConversationRepository
+            // Validate conversation exists and belongs to current user
+            var conversation = await _unitOfWork.ConversationRepository
                 .GetAll()
+                .Include(x => x.ModelsCharacter)
                 .FirstOrDefaultAsync(x => x.Id == conversationId && x.UserId == userId);
 
-            if (conversationExisted == null) {
+            if (conversation == null)
+            {
                 throw new KeyNotFoundException("Conversation not found!");
             }
 
-            var query = _unitOfWork.MessageRepository
-                .GetAll().Include(x => x.ModelsCharacter)
-                .Where(x => x.ConversationId == conversationId);
-
-            List<Message> messages;
-
-            if (beforeMessageId != null)
+            if (beforeMessageId == null)
             {
-                messages = await query
-                    .Where(x => x.Id < beforeMessageId)
-                    .OrderByDescending(x => x.Id)
-                    .Take(limit)
-                    .ToListAsync();
+                var cacheKey = $"chat:{conversationId}:latest:{limit}:user:{userId}";
 
-                messages = messages.OrderBy(x => x.Id).ToList();
-            }
-
-            else
-            {
-                var cacheKey = $"chat:{conversationId}:latest:{limit}";
-
-                var responseCached = await _redisCacheService
+                var cachedResponse = await _redisCacheService
                     .GetAsync<MessageListResponse>(cacheKey);
 
-                if (responseCached != null)
+                if (cachedResponse != null)
                 {
                     return new ApiResponse<MessageListResponse>
                     {
                         Success = true,
                         Message = "Data from cache",
-                        Data = responseCached
+                        Data = cachedResponse
                     };
                 }
+            }
 
-                messages = await query
-                    .OrderByDescending(x => x.Id)
-                    .Take(limit)
-                    .ToListAsync();
+            var query = _unitOfWork.MessageRepository
+                .GetAll()
+                .Where(x => x.ConversationId == conversationId);
 
-                messages = messages.OrderBy(x => x.Id).ToList();
+            if (beforeMessageId != null)
+            {
+                query = query.Where(x => x.Id < beforeMessageId);
+            }
 
-                response = messages.Adapt<MessageListResponse>();
+            var messages = await query
+                .OrderByDescending(x => x.Id)
+                .Take(limit)
+                .ToListAsync();
+
+            messages = messages
+                .Take(limit)
+                .OrderBy(x => x.Id)
+                .ToList();
+
+            var response = new MessageListResponse
+            {
+                ModelId = conversation.ModelCharacterId.ToString(),
+                ModelName = conversation.ModelsCharacter?.Name, 
+                ModelAvatarUrl = conversation.ModelsCharacter?.AvatarUrl,
+                FirstMessageId = messages.LastOrDefault()?.Id,
+
+                Messages = messages.Adapt<List<MessageResponse>>()
+            };
+
+
+            if (beforeMessageId == null)
+            {
+                var cacheKey = $"chat:{conversationId}:latest:{limit}:user:{userId}";
 
                 await _redisCacheService.SetAsync(
                     cacheKey,
                     response,
-                    TimeSpan.FromSeconds(30)
-                );
-
-                return new ApiResponse<MessageListResponse>
-                {
-                    Success = true,
-                    Data = response
-                };
+                    TimeSpan.FromSeconds(30));
             }
-
-            response = messages.Adapt<MessageListResponse>();
 
             return new ApiResponse<MessageListResponse>
             {
                 Success = true,
+                Message = messages.Any()
+                    ? "Messages retrieved successfully"
+                    : "No messages found in this conversation",
                 Data = response
             };
         }
+
 
         public async Task<ApiResponse<MessageResponse>> CreateMessage(MessageRequest request)
         {
@@ -135,7 +149,7 @@ namespace WaifuAIAssistant.Application.Service
                 // Validate character exists before calling AI
                 var character = await _unitOfWork.ModelRepository
                     .GetAll()
-                    .FirstOrDefaultAsync(x => x.Id == conversation.WaifuId);
+                    .FirstOrDefaultAsync(x => x.Id == conversation.ModelCharacterId);
 
                 if (character == null)
                 {
