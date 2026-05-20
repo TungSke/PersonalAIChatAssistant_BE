@@ -61,6 +61,11 @@ namespace WaifuAIAssistant.Infrastructure
                     .HasForeignKey(c => c.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                entity.HasOne(c => c.ModelsCharacter)
+                    .WithMany()
+                    .HasForeignKey(c => c.ModelCharacterId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
 
                 entity.Property(e => e.CreatedAt)
                       .HasDefaultValueSql("GETUTCDATE()")

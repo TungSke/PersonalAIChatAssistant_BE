@@ -103,7 +103,7 @@ namespace WaifuAIAssistant.Infrastructure
                 {
                     Id = 1,
                     UserId = 1,
-                    WaifuId = 1,
+                    ModelCharacterId = 1,
                     Title = "Test",
                     Status = ConversationStatus.Active,
                 }
