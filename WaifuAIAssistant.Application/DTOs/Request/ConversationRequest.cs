@@ -9,8 +9,7 @@ namespace WaifuAIAssistant.Application.DTOs.Request
 {
     public class ConversationRequest
     {
-        public int WaifuId { get; set; }
-        public string Title { get; set; }
+        public int ModelCharacterId { get; set; }
 
         [JsonIgnore]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

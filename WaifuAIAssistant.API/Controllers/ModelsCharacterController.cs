@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Swashbuckle.AspNetCore.Annotations;
 using WaifuAIAssistant.Application.Interfaces;
 
 namespace WaifuAIAssistant.API.Controllers
@@ -18,6 +19,9 @@ namespace WaifuAIAssistant.API.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(
+        Summary = "Get all characters that the user has not chatted with."
+        )]
         public async Task<IActionResult> Get(int pageIndex = 1, int pageSize = 5, string? search = "")
         {
             var characters = await _modelsCharacterService.GetAllAsync(pageIndex, pageSize, search);
