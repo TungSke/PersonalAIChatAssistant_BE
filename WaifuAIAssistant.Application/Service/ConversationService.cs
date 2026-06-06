@@ -66,18 +66,27 @@ namespace WaifuAIAssistant.Application.Service
             try
             {
                 var userId = await _jwtService.GetUserId();
-                var modelCharacter = await _unitOfWork.ModelRepository.FindAsync(request.WaifuId);
+                var modelCharacter = await _unitOfWork.ModelRepository.FindAsync(request.ModelCharacterId);
 
-                var conversationExisted = await _unitOfWork.ConversationRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == userId && x.ModelCharacterId == request.WaifuId);
+                var conversationExisted = await _unitOfWork.ConversationRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == userId && x.ModelCharacterId == request.ModelCharacterId);
                 if (conversationExisted != null)
                 {
-                    throw new Exception("Conversation already exists!");
+                    return new ApiResponse<ConversationRequest>
+                    {
+                        Success = false,
+                        Message = "Conversation already exists!",
+                        Data = request,
+                        Errors = new List<string> {
+                            "The conversation with this character already existed!"
+                        }
+                    };
                 }
 
                 var createCon = request.Adapt<Conversation>();
                 createCon.UserId = userId;
-                createCon.Title = string.IsNullOrEmpty(request.Title) ? modelCharacter.Name : request.Title;
+                createCon.Title = modelCharacter.Name;
                 createCon.Status = ConversationStatus.Active;
+                createCon.CreatedAt = DateTime.UtcNow;
 
                 await _unitOfWork.ConversationRepository.AddAsync(createCon);
                 await _unitOfWork.SaveChangesAsync();

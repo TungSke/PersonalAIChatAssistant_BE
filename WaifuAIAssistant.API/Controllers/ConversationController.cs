@@ -34,9 +34,9 @@ namespace WaifuAIAssistant.API.Controllers
             var reponse = await _service.CreateConversation(request);
             if (reponse.Success == false)
             {
-                return BadRequest(Response);
+                return BadRequest(reponse);
             }
-            return CreatedAtAction(nameof(GetAllConversation), new { reponse.Data });
+            return CreatedAtAction(nameof(GetAllConversation), new { reponse });
         }
 
         [HttpDelete]
