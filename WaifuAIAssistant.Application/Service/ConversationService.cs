@@ -42,49 +42,55 @@ namespace WaifuAIAssistant.Application.Service
             };
         }
 
-        public async Task<ApiResponse<ConversationRequest>> CreateConversation(ConversationRequest request)
+        public async Task<ApiResponse<ConversationResponse>> CreateConversation(ConversationRequest request)
         {
-            try
+            var userId = await _jwtService.GetUserId();
+
+            var modelCharacter = await _unitOfWork.ModelRepository
+                .FindAsync(request.ModelCharacterId);
+
+            if (modelCharacter == null)
             {
-                var userId = await _jwtService.GetUserId();
-                var modelCharacter = await _unitOfWork.ModelRepository.FindAsync(request.ModelCharacterId);
+                throw new KeyNotFoundException("Model character not found");
+            }
 
-                var conversationExisted = await _unitOfWork.ConversationRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == userId && x.ModelCharacterId == request.ModelCharacterId);
-                if (conversationExisted != null)
-                {
-                    return new ApiResponse<ConversationRequest>
-                    {
-                        Success = false,
-                        Message = "Conversation already exists!",
-                        Data = request,
-                        Errors = new List<string> {
-                            "The conversation with this character already existed!"
-                        }
-                    };
-                }
+            var conversationExisted = await _unitOfWork.ConversationRepository
+                .GetAll()
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == userId &&
+                    x.ModelCharacterId == request.ModelCharacterId);
 
-                var createCon = request.Adapt<Conversation>();
-                createCon.UserId = userId;
-                createCon.Title = modelCharacter.Name;
-                createCon.Status = ConversationStatus.Active;
-                createCon.CreatedAt = DateTime.UtcNow;
-
-                await _unitOfWork.ConversationRepository.AddAsync(createCon);
-                await _unitOfWork.SaveChangesAsync();
-                return new ApiResponse<ConversationRequest>
+            if (conversationExisted != null)
+            {
+                return new ApiResponse<ConversationResponse>
                 {
                     Success = true,
-                    Message = "Created success!",
-                    Data = request
+                    Message = "Conversation already exists!",
+                    Data = conversationExisted.Adapt<ConversationResponse>()
                 };
             }
-            catch (Exception e)
+
+            var conversation = new Conversation
             {
-                throw new Exception($"Failed to create conversation: {e.Message}");
-            }
+                UserId = userId,
+                ModelCharacterId = request.ModelCharacterId,
+                Title = modelCharacter.Name,
+                Status = ConversationStatus.Active,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.ConversationRepository.AddAsync(conversation);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiResponse<ConversationResponse>
+            {
+                Success = true,
+                Message = "Created success!",
+                Data = conversation.Adapt<ConversationResponse>()
+            };
         }
 
-        public async Task<ApiResponse<ConversationRequest>> DeleteConversation(int id)
+        public async Task<ApiResponse<ConversationResponse>> DeleteConversation(int id)
         {
             try
             {
@@ -98,16 +104,16 @@ namespace WaifuAIAssistant.Application.Service
             }
             catch (Exception e)
             {
-                return new ApiResponse<ConversationRequest>
+                return new ApiResponse<ConversationResponse>
                 {
                     Success = false,
                     Message = e.Message
                 };
             }
-            return new ApiResponse<ConversationRequest>
+            return new ApiResponse<ConversationResponse>
             {
                 Success = true,
-                Message = "Create success!"
+                Message = "Delete success!"
             };
         }
 

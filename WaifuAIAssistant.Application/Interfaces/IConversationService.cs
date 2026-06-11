@@ -8,7 +8,7 @@ namespace WaifuAIAssistant.Application.Interfaces
     public interface IConversationService
     {
         Task<ApiResponse<List<ConversationResponse>>> GetConversationAsync();
-        Task<ApiResponse<ConversationRequest>> CreateConversation(ConversationRequest request);
-        Task<ApiResponse<ConversationRequest>> DeleteConversation(int id);
+        Task<ApiResponse<ConversationResponse>> CreateConversation(ConversationRequest request);
+        Task<ApiResponse<ConversationResponse>> DeleteConversation(int id);
     }
 }
