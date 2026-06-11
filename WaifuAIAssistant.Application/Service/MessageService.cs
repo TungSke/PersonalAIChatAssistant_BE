@@ -186,7 +186,7 @@ namespace WaifuAIAssistant.Application.Service
                         ConversationId = conversation.Id,
                         UserId = userId,
                         Content = request.Content,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.Now
                     };
 
                     await _unitOfWork.MessageRepository.AddAsync(userMessage);
@@ -197,12 +197,12 @@ namespace WaifuAIAssistant.Application.Service
                         ConversationId = conversation.Id,
                         ModelCharacterId = character.Id,
                         Content = aiReply,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.Now
                     };
 
                     await _unitOfWork.MessageRepository.AddAsync(aiMessage);
 
-                    conversation.UpdatedAt = DateTime.UtcNow;
+                    conversation.UpdatedAt = DateTime.Now;
 
                     // Every 20 messages, summarize the conversation to keep context window short
                     var messageCount = await _unitOfWork.MessageRepository

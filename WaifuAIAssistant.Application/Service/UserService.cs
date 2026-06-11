@@ -65,8 +65,8 @@ namespace WaifuAIAssistant.Application.Service
 
             var newUser = request.Adapt<User>();
             newUser.Id = new int();
-            newUser.CreatedAt = DateTime.UtcNow;
-            newUser.UpdatedAt = DateTime.UtcNow;
+            newUser.CreatedAt = DateTime.Now;
+            newUser.UpdatedAt = DateTime.Now;
             newUser.Status = UserStatus.Inactive;
             newUser.PasswordHash = _passwordHandlerService.HashPassword(request.Password);
             await _unitOfWork.UserRepository.AddAsync(newUser);
@@ -127,7 +127,7 @@ namespace WaifuAIAssistant.Application.Service
             }
 
             user.RefreshToken = await _jWTService.GenerateRefreshToken();
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Set refresh token expiry time
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7); // Set refresh token expiry time
             await _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
 
@@ -149,7 +149,7 @@ namespace WaifuAIAssistant.Application.Service
         public async Task<ApiResponse<string>> RefreshToken(RefreshTokenRequest request)
         {
             var user = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.RefreshToken == request.Token);
-            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.Now)
             {
                 throw new UnauthorizedAccessException("Invalid or expired refresh token");
             }
@@ -157,7 +157,7 @@ namespace WaifuAIAssistant.Application.Service
             var jwtToken = await _jWTService.GenerateJwtToken(user);
             // Optionally, you can also generate a new refresh token and update the user's record
             user.RefreshToken = await _jWTService.GenerateRefreshToken();
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Set new refresh token expiry time
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7); // Set new refresh token expiry time
             await _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
             return new ApiResponse<string>
