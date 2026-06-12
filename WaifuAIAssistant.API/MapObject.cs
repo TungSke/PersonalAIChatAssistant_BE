@@ -10,6 +10,13 @@ namespace WaifuAIAssistant.API
         {
             config.NewConfig<Message, MessageResponse>()
                   .Map(dest => dest.role, src => src.UserId == null ? "AI" : "User");
+
+            config.NewConfig<Conversation, ConversationResponse>()
+                .Map(dest => dest.AvatarUrl, src => src.ModelsCharacter.AvatarUrl ?? string.Empty);
+
+
+            //config.NewConfig<List<Conversation>, List<ConversationResponse>>()
+            //      .Map(dest => dest., src => src.ModelsCharacter.AvatarUrl ?? string.Empty);
         }
     }
 }

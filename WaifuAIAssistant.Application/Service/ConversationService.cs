@@ -31,6 +31,7 @@ namespace WaifuAIAssistant.Application.Service
                 .ConversationRepository
                 .GetAll()
                 .Where(x => x.UserId == userId)
+                .Include(x => x.ModelsCharacter)
                 .OrderByDescending(x => x.UpdatedAt)
                 .ToListAsync();
 
