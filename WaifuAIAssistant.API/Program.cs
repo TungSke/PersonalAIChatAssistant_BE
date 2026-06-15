@@ -20,6 +20,7 @@ using WaifuAIAssistant.Domain.Services;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
 using WaifuAIAssistant.Infrastructure;
 using WaifuAIAssistant.Infrastructure.ThirdParty;
+using WaifuAIAssistant.Domain.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

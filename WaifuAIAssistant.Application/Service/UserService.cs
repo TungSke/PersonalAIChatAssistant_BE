@@ -8,6 +8,7 @@ using WaifuAIAssistant.Domain;
 using WaifuAIAssistant.Domain.Base;
 using WaifuAIAssistant.Domain.Entities;
 using WaifuAIAssistant.Domain.Enums;
+using WaifuAIAssistant.Domain.Interfaces;
 using WaifuAIAssistant.Domain.Services;
 using WaifuAIAssistant.Domain.ThirdPartyInterface;
 using WaifuAIAssistant.Infrastructure.ThirdParty;
