@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 using WaifuAIAssistant.Application.DTOs.Request;
 using WaifuAIAssistant.Application.Interfaces;
 using WaifuAIAssistant.Service.DTOs.Request;
@@ -40,6 +41,19 @@ namespace WaifuAIAssistant.API.Controllers
 
         }
 
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> Me()
+        {
+            var response = await _userService.Me();
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+
+            return Unauthorized(response);
+        }
+
         [HttpPost("verify-account")]
         public async Task<IActionResult> VerifyAccount(VerifyAccountRequest request)
         {
@@ -53,13 +67,26 @@ namespace WaifuAIAssistant.API.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
+        public async Task<IActionResult> RefreshToken()
         {
-            var response = await _userService.RefreshToken(request);
+            var response = await _userService.RefreshToken();
             if (response.Success)
             {
                 return Ok(response);
             }
+
+            return Unauthorized(response);
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var response = await _userService.Logout();
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+
             return BadRequest(response);
         }
     }

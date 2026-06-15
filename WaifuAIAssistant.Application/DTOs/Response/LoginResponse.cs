@@ -8,7 +8,8 @@ namespace WaifuAIAssistant.Application.DTOs.Response
 {
     public class LoginResponse
     {
-        public string Token { get; set; }
-        public string refreshToken { get; set; }
+        public int UserId { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
     }
 }

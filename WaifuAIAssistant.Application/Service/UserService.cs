@@ -22,13 +22,25 @@ namespace WaifuAIAssistant.Application.Service
         private readonly IPasswordHandlerService _passwordHandlerService;
         private readonly IJwtService _jWTService;
         private readonly GoogleService _googleService;
+        private readonly IAuthCookieService _authCookieService;
 
-        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, IJwtService jWTService, GoogleService googleService)
+        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, IJwtService jWTService, GoogleService googleService, IAuthCookieService authCookieService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _passwordHandlerService = passwordHandlerService ?? throw new ArgumentNullException(nameof(passwordHandlerService));
             _jWTService=jWTService;
             _googleService=googleService;
+            _authCookieService = authCookieService ?? throw new ArgumentNullException(nameof(authCookieService));
+        }
+
+        private static LoginResponse MapUser(User user)
+        {
+            return new LoginResponse
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Email = user.Email
+            };
         }
 
         private async Task<User> findUserByEmail(string email)
@@ -127,44 +139,109 @@ namespace WaifuAIAssistant.Application.Service
             }
 
             user.RefreshToken = await _jWTService.GenerateRefreshToken();
-            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7); // Set refresh token expiry time
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Set refresh token expiry time
             await _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
 
-            // Generate JWT token (optional, if you want to return it)
             var jwtToken = await _jWTService.GenerateJwtToken(user);
+            _authCookieService.SetAuthCookies(jwtToken, user.RefreshToken);
 
             return new ApiResponse<LoginResponse>
             {
                 Success = true,
                 Message = "Login successful",
-                Data = new LoginResponse
-                {
-                    Token = jwtToken, 
-                    refreshToken = user.RefreshToken
-                }
+                Data = MapUser(user)
             };
         }
 
-        public async Task<ApiResponse<string>> RefreshToken(RefreshTokenRequest request)
+        public async Task<ApiResponse<LoginResponse>> Me()
         {
-            var user = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.RefreshToken == request.Token);
-            if (user == null || user.RefreshTokenExpiryTime <= DateTime.Now)
+            var userId = await _jWTService.GetUserId();
+            if (userId <= 0)
             {
-                throw new UnauthorizedAccessException("Invalid or expired refresh token");
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Unauthorized"
+                };
             }
-            // Generate new JWT token
+
+            var user = await findUserById(userId);
+            if (user == null)
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "User not found"
+                };
+            }
+
+            return new ApiResponse<LoginResponse>
+            {
+                Success = true,
+                Message = "Session restored",
+                Data = MapUser(user)
+            };
+        }
+
+        public async Task<ApiResponse<string>> RefreshToken()
+        {
+            var refreshToken = _authCookieService.GetRefreshToken();
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Missing refresh token"
+                };
+            }
+
+            var user = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+            if (user == null || user.RefreshTokenExpiryTime == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid or expired refresh token"
+                };
+            }
+
             var jwtToken = await _jWTService.GenerateJwtToken(user);
-            // Optionally, you can also generate a new refresh token and update the user's record
             user.RefreshToken = await _jWTService.GenerateRefreshToken();
-            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7); // Set new refresh token expiry time
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Set new refresh token expiry time
             await _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
+
+            _authCookieService.SetAuthCookies(jwtToken, user.RefreshToken);
+
             return new ApiResponse<string>
             {
                 Success = true,
-                Message = "Token refreshed successfully",
-                Data = jwtToken
+                Message = "Token refreshed successfully"
+            };
+        }
+
+        public async Task<ApiResponse<string>> Logout()
+        {
+            var refreshToken = _authCookieService.GetRefreshToken();
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+            {
+                var user = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+                if (user != null)
+                {
+                    user.RefreshToken = null;
+                    user.RefreshTokenExpiryTime = null;
+                    await _unitOfWork.UserRepository.Update(user);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+            }
+
+            _authCookieService.ClearAuthCookies();
+
+            return new ApiResponse<string>
+            {
+                Success = true,
+                Message = "Logout successful"
             };
         }
     }

@@ -84,7 +84,7 @@ namespace WaifuAiAssistant.Test.Controllers
             {
                 Success = true,
                 Message = "Login successful",
-                Data = new LoginResponse { Token = "jwt-token-xyz" }
+                Data = new LoginResponse { UserId = 1, Username = "testuser", Email = "test@example.com" }
             };
 
             _userServiceMock.Setup(s => s.Login(It.IsAny<LoginRequest>()))
@@ -98,8 +98,10 @@ namespace WaifuAiAssistant.Test.Controllers
             var response = okResult.Value.Should().BeAssignableTo<ApiResponse<LoginResponse>>().Subject;
 
             response.Success.Should().BeTrue();
-            response.Data.Should().NotBeNull();
-            response.Data.Token.Should().Be("jwt-token-xyz");
+            var data = response.Data;
+            data.Should().NotBeNull();
+            data!.UserId.Should().Be(1);
+            data.Username.Should().Be("testuser");
         }
 
         [Fact]

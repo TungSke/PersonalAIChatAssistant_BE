@@ -37,6 +37,20 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 builder.Services.AddHealthChecks();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("frontend", policy =>
+    {
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+            ?? new[] { "http://localhost:3000", "https://localhost:3000" };
+
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 // Add configuration from appsettings.json, environment variables, and user secrets
 builder.Configuration
     .SetBasePath(builder.Environment.ContentRootPath)
@@ -70,6 +84,20 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Cookies["waifu_access_token"];
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -140,6 +168,7 @@ builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<ApplicationDbContext>();
 builder.Services.AddScoped<IPasswordHandlerService, PasswordHandlerService>();
 builder.Services.AddScoped<IJwtService, JWTService>();
+builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<GoogleService>();
@@ -171,6 +200,8 @@ app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseRateLimiter();
 
 app.UseHttpsRedirection();
+
+app.UseCors("frontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
