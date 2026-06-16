@@ -18,8 +18,6 @@ namespace WaifuAIAssistant.API.Controllers
             _service = service;
         }
 
-        private string getUserid() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
         [HttpGet]
         public async Task<IActionResult> GetAllConversation()
         {
@@ -30,7 +28,6 @@ namespace WaifuAIAssistant.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateConversation(ConversationRequest request)
         {
-            var userId = getUserid();
             var reponse = await _service.CreateConversation(request);
             if (reponse.Success == false)
             {
