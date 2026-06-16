@@ -112,7 +112,7 @@ namespace WaifuAIAssistant.Infrastructure
                     Id = 1,
                     UserId = 1,
                     ModelCharacterId = 1,
-                    Title = "Test",
+                    Title = "Misono Mika",
                     Status = ConversationStatus.Active,
                 }
                 );
