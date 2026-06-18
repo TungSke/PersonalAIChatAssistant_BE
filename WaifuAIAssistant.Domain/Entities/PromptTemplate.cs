@@ -1,7 +1,12 @@
-﻿namespace WaifuAIAssistant.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace WaifuAIAssistant.Domain.Entities
 {
     public class PromptTemplate
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         // The unique key for the prompt template, used to identify it in the system.

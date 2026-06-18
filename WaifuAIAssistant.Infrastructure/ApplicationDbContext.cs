@@ -46,6 +46,13 @@ namespace WaifuAIAssistant.Infrastructure
             {
                 entity.HasIndex(e => e.Id).IsUnique();
                 entity.Property(e => e.Name).IsRequired();
+                entity.Property(e => e.Backstory).IsRequired();
+                entity.Property(e => e.Personality).IsRequired();
+                entity.Property(e => e.AvatarUrl).IsRequired();
+                entity.Property(e => e.SpeakingStyle).IsRequired();
+                entity.Property(e => e.IntelligenceLevel).IsRequired();
+                entity.Property(e => e.ResponseStyle).IsRequired();
+                entity.Property(e => e.ExampleDialogue).IsRequired();
                 entity.HasMany(c => c.CharacterEmotions)
                     .WithOne(e => e.Character)
                     .HasForeignKey(e => e.CharacterId)
