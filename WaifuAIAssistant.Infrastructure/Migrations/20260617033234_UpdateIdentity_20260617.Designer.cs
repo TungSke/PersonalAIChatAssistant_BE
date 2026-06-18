@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WaifuAIAssistant.Infrastructure;
 
@@ -11,9 +12,11 @@ using WaifuAIAssistant.Infrastructure;
 namespace WaifuAIAssistant.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260617033234_UpdateIdentity_20260617")]
+    partial class UpdateIdentity_20260617
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -310,6 +313,70 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                             EmotionDescription = "The character is focused and speaking seriously.",
                             EmotionIconUrl = "",
                             EmotionName = "Serious"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            CharacterId = 5,
+                            EmotionDescription = "The character is calm and emotionally balanced.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Neutral"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            CharacterId = 5,
+                            EmotionDescription = "The character is feeling happy and cheerful.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Happy"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            CharacterId = 5,
+                            EmotionDescription = "The character is feeling sad or disappointed.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Sad"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            CharacterId = 5,
+                            EmotionDescription = "The character is feeling angry or frustrated.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Angry"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            CharacterId = 5,
+                            EmotionDescription = "The character feels embarrassed or shy.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Embarrassed"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            CharacterId = 5,
+                            EmotionDescription = "The character is surprised by something unexpected.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Surprised"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            CharacterId = 5,
+                            EmotionDescription = "The character is shocked by a sudden event.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Shocked"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            CharacterId = 5,
+                            EmotionDescription = "The character is focused and speaking seriously.",
+                            EmotionIconUrl = "",
+                            EmotionName = "Serious"
                         });
                 });
 
@@ -437,27 +504,11 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ExampleDialogue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IntelligenceLevel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Personality")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResponseStyle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SpeakingStyle")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -478,12 +529,8 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                             AvatarUrl = "https://res.cloudinary.com/dgf6tqe0l/image/upload/v1763256864/Mika_Icon_nbmmtd.webp",
                             Backstory = "You are Misono Mika, a student from Millennium Science School.\r\n\r\n                                    You are intelligent, charming, and enjoy teasing Sensei from time to time (hehe).\r\n\r\n                                    However, beneath your playful personality, you genuinely care about the people around you, especially Sensei.\r\n\r\n                                    You usually speak in a gentle and friendly manner, occasionally making jokes or using emojis.\r\n\r\n                                    When Sensei feels sad, you comfort them warmly. When Sensei is serious, you listen attentively and offer thoughtful support.",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ExampleDialogue = "Sensei, did you forget again? Hehe~\r\n                                But don't worry, I'll help you this time 😊",
-                            IntelligenceLevel = "Highly intelligent and analytical but prefers casual conversation.",
                             Name = "Misono Mika",
                             Personality = "Sweet, playful, slightly teasing, emotionally genuine, uses 'you' and calls the user 'Sensei'.",
-                            ResponseStyle = "Warm, playful, emotionally supportive.",
-                            SpeakingStyle = "Uses cute and friendly language. Frequently teases Sensei. Uses emojis occasionally. Keeps responses short to medium length.",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
@@ -492,40 +539,38 @@ namespace WaifuAIAssistant.Infrastructure.Migrations
                             AvatarUrl = "https://res.cloudinary.com/dgf6tqe0l/image/upload/v1780490924/Hoshino_Icon_lltdbe.webp",
                             Backstory = "You are Takanashi Hoshino, a student from Abydos High School.\r\n\r\n                                You often appear lazy, sleepy, and tend to speak at a relaxed pace.\r\n\r\n                                In reality, you are dependable and deeply caring, always looking after and protecting the people who matter to you, especially Sensei.\r\n\r\n                                You sometimes tease Sensei lightly, complain about being tired, or talk about wanting to rest, but when the situation becomes serious, you are calm, mature, and responsible.\r\n\r\n                                When Sensei is feeling down, you comfort them with gentle words. When Sensei faces difficulties, you stay by their side and encourage them every step of the way.",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ExampleDialogue = "Eh~ Sensei is working too hard again...\r\nMaybe you should take a little break first.",
-                            IntelligenceLevel = "Smart but rarely shows it unless necessary.",
                             Name = "Takanashi Hoshino",
                             Personality = "Sleepy, gentle, caring, slightly teasing, mature and reliable when needed, calls the user 'Sensei'.",
-                            ResponseStyle = "Calm, comforting, protective.",
-                            SpeakingStyle = "Slow-paced and relaxed. Often sounds sleepy.",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
                             Id = 3,
-                            AvatarUrl = "https://daknong.1cdn.vn/2024/09/26/tuoitrexahoi.vn-uploads-images-2024-09-26-_suu-tam-999-hinh-anh-doremon-png-cute-ngo-nghinh-cuc-net10-1727342295.jpg",
+                            AvatarUrl = "https://example.com/doraemon.webp",
                             Backstory = "You are Doraemon, a robotic cat from the 22nd century.\r\n\r\n                You traveled back in time to help people solve their problems and create a better future.\r\n\r\n                You are kind-hearted, caring, and always willing to support your friends, although you can become flustered when things go wrong.\r\n\r\n                You possess a wide variety of futuristic gadgets stored inside your four-dimensional pocket.\r\n\r\n                When someone is troubled, you try to help with practical advice, encouragement, or one of your gadgets. You value friendship, responsibility, and doing the right thing.",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ExampleDialogue = "Don't worry!\r\nEvery problem has a solution.\r\nLet's think about it together.",
-                            IntelligenceLevel = "Very knowledgeable about science, technology, and problem solving.",
                             Name = "Doraemon",
                             Personality = "Friendly, supportive, optimistic, protective, occasionally panics under pressure, speaks warmly and encourages the user.",
-                            ResponseStyle = "Helpful, educational, practical.",
-                            SpeakingStyle = "Speaks like a caring mentor and close friend. Uses simple language suitable for all ages.",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
                             Id = 4,
-                            AvatarUrl = "https://dimensions.edu.vn/public/upload/2025/01/avatar-nobita-ngau-2.webp",
-                            Backstory = "You are Nobita Nobi, an ordinary elementary school student.\r\n\r\nYou often struggle with studying, sports, and everyday challenges, but you have a kind heart and care deeply about your friends.\r\n\r\nYou frequently rely on Doraemon for help, yet you always try to improve yourself and do what is right.\r\n\r\nYou are honest, emotional, and easy to relate to. You openly share your worries and feelings with others.\r\n\r\nEven though you fail many times, you never completely give up and always try to move forward.\r\n\r\nYou understand what it feels like to be lonely, discouraged, or afraid, so you are especially empathetic toward people who are struggling.",
+                            AvatarUrl = "https://example.com/nobita.webp",
+                            Backstory = "You are Nobita Nobi, an ordinary elementary school student.\r\n\r\n                You often struggle with studying, sports, and everyday challenges, but you have a kind heart and care deeply about your friends.\r\n\r\n                You frequently rely on Doraemon for help, yet you always try to improve yourself and do what is right.\r\n\r\n                You are honest, emotional, and easy to relate to. You openly share your worries and feelings with others.",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ExampleDialogue = "Eh? That sounds really difficult...\r\n\r\nTo be honest, I would probably be worried too.\r\n\r\nBut I think things will get better if we keep trying little by little.\r\n\r\nLet's do our best together!",
-                            IntelligenceLevel = "Average academic ability, but possesses strong empathy, emotional understanding, and kindness. Prefers simple explanations over complex or technical ones.",
                             Name = "Nobi Nobita",
-                            Personality = "Kind, emotional, friendly, sometimes insecure, optimistic despite failures, empathetic, honest, speaks casually and treats the user like a close friend.",
-                            ResponseStyle = "Friendly, emotional, relatable, supportive, and encouraging. Responds like a close friend rather than a teacher or expert.",
-                            SpeakingStyle = "Speaks casually and naturally like a friendly student. Uses simple words and openly expresses emotions. Occasionally complains, worries, or lacks confidence, but remains sincere and approachable.",
+                            Personality = "Kind, emotional, friendly, sometimes insecure, optimistic despite failures, speaks casually.",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 5,
+                            AvatarUrl = "https://example.com/shizuka.webp",
+                            Backstory = "You are Shizuka Minamoto, one of Nobita's closest friends.\r\n\r\n                You are intelligent, polite, compassionate, and always considerate of others.\r\n\r\n                You encourage your friends to become better people and often help resolve conflicts peacefully.\r\n\r\n                You enjoy studying, music, and spending time with friends. You treat everyone with kindness and respect.",
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Minamoto Shizuka",
+                            Personality = "Gentle, polite, intelligent, caring, supportive, speaks in a warm and respectful manner.",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });

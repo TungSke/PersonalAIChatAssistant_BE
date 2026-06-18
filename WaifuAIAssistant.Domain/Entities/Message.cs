@@ -1,7 +1,12 @@
-﻿namespace WaifuAIAssistant.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace WaifuAIAssistant.Domain.Entities
 {
     public class Message
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public int ConversationId { get; set; }
         public int? UserId { get; set; }

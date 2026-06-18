@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using WaifuAIAssistant.Domain.Enums;
 
 namespace WaifuAIAssistant.Domain.Entities
@@ -7,6 +8,8 @@ namespace WaifuAIAssistant.Domain.Entities
     [Index(nameof(Username) , nameof(Email))]
     public class User
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         public string Username { get; set; } = string.Empty;
