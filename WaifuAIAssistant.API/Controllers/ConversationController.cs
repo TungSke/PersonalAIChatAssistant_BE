@@ -33,7 +33,7 @@ namespace WaifuAIAssistant.API.Controllers
             {
                 return BadRequest(reponse);
             }
-            return CreatedAtAction(nameof(GetAllConversation), new { reponse });
+            return CreatedAtAction(nameof(GetAllConversation), reponse);
         }
 
         [HttpDelete]
