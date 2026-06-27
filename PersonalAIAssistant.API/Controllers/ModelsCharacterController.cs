@@ -1,0 +1,35 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Swashbuckle.AspNetCore.Annotations;
+using PersonalAIAssistant.Application.Interfaces;
+
+namespace PersonalAIAssistant.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class ModelsCharacterController : ControllerBase
+    {
+        private readonly IModelsCharacterService _modelsCharacterService;
+        public ModelsCharacterController(IModelsCharacterService modelsCharacterService)
+        {
+            _modelsCharacterService = modelsCharacterService ?? throw new ArgumentNullException(nameof(modelsCharacterService));
+        }
+
+        [HttpGet]
+        [SwaggerOperation(
+        Summary = "Get all characters that the user has not chatted with."
+        )]
+        public async Task<IActionResult> Get(int pageIndex = 1, int pageSize = 5, string? search = "")
+        {
+            var characters = await _modelsCharacterService.GetAllAsync(pageIndex, pageSize, search);
+            if (characters == null)
+            {
+                return NotFound("No characters found.");
+            }
+            return Ok(characters);
+        }
+    }
+}

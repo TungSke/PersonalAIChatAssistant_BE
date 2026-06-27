@@ -12,22 +12,22 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["WaifuAIAssistant.API/WaifuAIAssistant.API.csproj", "WaifuAIAssistant.API/"]
-COPY ["WaifuAIAssistant.Application/WaifuAIAssistant.Application.csproj", "WaifuAIAssistant.Application/"]
-COPY ["WaifuAIAssistant.Domain/WaifuAIAssistant.Domain.csproj", "WaifuAIAssistant.Domain/"]
-COPY ["WaifuAIAssistant.Infrastructure/WaifuAIAssistant.Infrastructure.csproj", "WaifuAIAssistant.Infrastructure/"]
-RUN dotnet restore "./WaifuAIAssistant.API/WaifuAIAssistant.API.csproj"
+COPY ["PersonalAIAssistant.API/PersonalAIAssistant.API.csproj", "PersonalAIAssistant.API/"]
+COPY ["PersonalAIAssistant.Application/PersonalAIAssistant.Application.csproj", "PersonalAIAssistant.Application/"]
+COPY ["PersonalAIAssistant.Domain/PersonalAIAssistant.Domain.csproj", "PersonalAIAssistant.Domain/"]
+COPY ["PersonalAIAssistant.Infrastructure/PersonalAIAssistant.Infrastructure.csproj", "PersonalAIAssistant.Infrastructure/"]
+RUN dotnet restore "./PersonalAIAssistant.API/PersonalAIAssistant.API.csproj"
 COPY . .
-WORKDIR "/src/WaifuAIAssistant.API"
-RUN dotnet build "./WaifuAIAssistant.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/PersonalAIAssistant.API"
+RUN dotnet build "./PersonalAIAssistant.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./WaifuAIAssistant.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./PersonalAIAssistant.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "WaifuAIAssistant.API.dll"]
+ENTRYPOINT ["dotnet", "PersonalAIAssistant.API.dll"]

@@ -1,6 +1,6 @@
-# WaifuAIAssistant Backend
+# PersonalAIAssistant Backend
 
-**WaifuAIAssistant** is a virtual AI assistant system developed with ASP.NET Core (.NET 10). It provides a backend API for managing AI characters, conversation interactions, user settings, and chat history. The system supports various AI integrations (such as OpenAI and Local Models), allowing highly personalized user experiences.
+**PersonalAIAssistant** is a virtual AI assistant system developed with ASP.NET Core (.NET 10). It provides a backend API for managing AI characters, conversation interactions, user settings, and chat history. The system supports various AI integrations (such as OpenAI and Local Models), allowing highly personalized user experiences.
 
 ---
 
@@ -21,10 +21,10 @@
 
 The project strictly follows the Clean Architecture pattern and is organized into 4 main layers:
 
-- `WaifuAIAssistant.Domain`: Core entities, repository interfaces, and domain models.
-- `WaifuAIAssistant.Application`: Application services, UseCases, DTOs, and interface definitions.
-- `WaifuAIAssistant.Infrastructure`: External integrations, database contexts (EF Core), and third-party services.
-- `WaifuAIAssistant.API`: Controllers, Dependency Injection (DI) configurations, middlewares, rate-limiting, and API endpoints.
+- `PersonalAIAssistant.Domain`: Core entities, repository interfaces, and domain models.
+- `PersonalAIAssistant.Application`: Application services, UseCases, DTOs, and interface definitions.
+- `PersonalAIAssistant.Infrastructure`: External integrations, database contexts (EF Core), and third-party services.
+- `PersonalAIAssistant.API`: Controllers, Dependency Injection (DI) configurations, middlewares, rate-limiting, and API endpoints.
 
 ---
 
