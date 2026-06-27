@@ -528,5 +528,5 @@ FodyWeavers.xsd
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,aspnetcore
 .env
-WaifuAIAssistant.API/appsettings.*.json
+PersonalAIAssistant.API/appsettings.*.json
 plan.md

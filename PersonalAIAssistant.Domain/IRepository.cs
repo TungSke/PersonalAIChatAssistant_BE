@@ -1,0 +1,35 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PersonalAIAssistant.Domain
+{
+    public interface IRepository<T> where T : class
+    {
+        Task AddAsync(T entity);
+
+        Task AddRangeAsync(IEnumerable<T> entities);
+
+        IQueryable<T> GetAll();
+
+        Task<T> FindAsync(params object[] keyValues);
+
+        Task Remove(T entity);
+
+        Task RemoveRange(IEnumerable<T> entities);
+
+        Task Update(T entity);
+
+        Task UpdateRange(IEnumerable<T> entities);
+
+        Task<IEnumerable<T>> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            Expression<Func<T, bool>>? predicate = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            Func<IQueryable<T>, IQueryable<T>>? include = null);
+    }
+}
