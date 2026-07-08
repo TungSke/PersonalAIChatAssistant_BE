@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PersonalAIAssistant.Domain;
-using PersonalAIAssistant.Domain.InterfaceRepository;
+using PersonalAIAssistant.Domain.Repositories;
 using PersonalAIAssistant.Infrastructure.Repository;
 
 namespace PersonalAIAssistant.Infrastructure

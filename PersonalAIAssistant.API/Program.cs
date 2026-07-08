@@ -15,7 +15,6 @@ using PersonalAIAssistant.API;
 using PersonalAIAssistant.API.Middleware;
 using PersonalAIAssistant.Domain;
 using PersonalAIAssistant.Infrastructure;
-using PersonalAIAssistant.Infrastructure.ThirdParty;
 using PersonalAIAssistant.Application.Interfaces.Services;
 using PersonalAIAssistant.Application.Interfaces.Infrastructure;
 using PersonalAIAssistant.Infrastructure.Services;

@@ -19,10 +19,10 @@ namespace PersonalAIAssistant.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHandlerService _passwordHandlerService;
         private readonly ITokenService _jWTService;
-        private readonly IAiService _googleService;
+        private readonly IGoogleService _googleService;
         private readonly IAuthCookieService _authCookieService;
 
-        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, ITokenService jWTService, IAiService googleService, IAuthCookieService authCookieService)
+        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, ITokenService jWTService, IGoogleService googleService, IAuthCookieService authCookieService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _passwordHandlerService = passwordHandlerService ?? throw new ArgumentNullException(nameof(passwordHandlerService));

@@ -4,18 +4,18 @@ using System.Net.Mail;
 using System.Security.Cryptography;
 using PersonalAIAssistant.Application.Interfaces.Infrastructure;
 
-namespace PersonalAIAssistant.Infrastructure.ThirdParty
+namespace PersonalAIAssistant.Infrastructure.Services
 {
     public class GoogleService : IGoogleService
     {
-        private readonly ITokenService _cache;
+        private readonly ICacheService _cache;
         private readonly IConfiguration _configuration;
 
         private const int OTP_EXPIRED_MINUTES = 5;
         private const int RESEND_COOLDOWN_SECONDS = 30;
 
         public GoogleService(
-            ITokenService cache,
+            ICacheService cache,
             IConfiguration configuration)
         {
             _cache = cache;
@@ -81,7 +81,7 @@ namespace PersonalAIAssistant.Infrastructure.ThirdParty
             var cooldownKey = GetCooldownKey(email);
 
             // Check resend cooldown
-            var cooldownExists =
+            var cooldownExists = 
                 await _cache.GetAsync<string>(cooldownKey);
 
             if (!string.IsNullOrWhiteSpace(cooldownExists))
