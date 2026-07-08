@@ -2,12 +2,12 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PersonalAIAssistant.API.Controllers;
-using PersonalAIAssistant.Application.Interfaces;
 using PersonalAIAssistant.Service.DTOs.Request;
 using PersonalAIAssistant.Domain.Base;
 using PersonalAIAssistant.Service.DTOs.Response;
 using PersonalAIAssistant.Application.DTOs.Response;
 using Xunit;
+using PersonalAIAssistant.Application.Interfaces.Services;
 
 namespace PersonalAIAssistant.Test.Controllers
 {

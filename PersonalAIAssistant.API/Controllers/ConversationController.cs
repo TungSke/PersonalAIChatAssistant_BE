@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using PersonalAIAssistant.Application.DTOs.Request;
-using PersonalAIAssistant.Application.Interfaces;
+using PersonalAIAssistant.Application.Interfaces.Services;
 
 namespace PersonalAIAssistant.API.Controllers
 {

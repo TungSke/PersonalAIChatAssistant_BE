@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using PersonalAIAssistant.Application.DTOs.Request;
-using PersonalAIAssistant.Application.Interfaces;
+using PersonalAIAssistant.Application.Interfaces.Services;
 
 namespace PersonalAIAssistant.API.Controllers
 {

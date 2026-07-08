@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
 using PersonalAIAssistant.Application.DTOs.Request;
-using PersonalAIAssistant.Application.Interfaces;
 using PersonalAIAssistant.Service.DTOs.Request;
+using PersonalAIAssistant.Application.Interfaces.Services;
 
 namespace PersonalAIAssistant.API.Controllers
 {

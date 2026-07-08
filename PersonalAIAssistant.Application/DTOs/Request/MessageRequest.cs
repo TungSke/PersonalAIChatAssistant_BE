@@ -1,5 +1,3 @@
-using Swashbuckle.AspNetCore.Annotations;
-
 namespace PersonalAIAssistant.Application.DTOs.Request
 {
     public class MessageRequest

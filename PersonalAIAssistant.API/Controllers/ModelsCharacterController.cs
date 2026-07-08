@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Swashbuckle.AspNetCore.Annotations;
-using PersonalAIAssistant.Application.Interfaces;
+using PersonalAIAssistant.Application.Interfaces.Services;
 
 namespace PersonalAIAssistant.API.Controllers
 {

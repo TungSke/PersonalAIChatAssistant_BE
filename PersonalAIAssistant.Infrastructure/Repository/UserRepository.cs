@@ -1,6 +1,6 @@
 using PersonalAIAssistant.Domain.Base;
 using PersonalAIAssistant.Domain.Entities;
-using PersonalAIAssistant.Domain.InterfaceRepository;
+using PersonalAIAssistant.Domain.Repositories;
 
 
 namespace PersonalAIAssistant.Infrastructure.Repository
