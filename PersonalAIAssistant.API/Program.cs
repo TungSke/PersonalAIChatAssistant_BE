@@ -13,14 +13,14 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using PersonalAIAssistant.API;
 using PersonalAIAssistant.API.Middleware;
-using PersonalAIAssistant.Application.Interfaces;
-using PersonalAIAssistant.Application.Service;
 using PersonalAIAssistant.Domain;
-using PersonalAIAssistant.Domain.Services;
-using PersonalAIAssistant.Domain.ThirdPartyInterface;
 using PersonalAIAssistant.Infrastructure;
 using PersonalAIAssistant.Infrastructure.ThirdParty;
-using PersonalAIAssistant.Domain.Interfaces;
+using PersonalAIAssistant.Application.Interfaces.Services;
+using PersonalAIAssistant.Application.Interfaces.Infrastructure;
+using PersonalAIAssistant.Infrastructure.Services;
+using PersonalAIAssistant.Application.Services;
+using PersonalAIAssistant.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -165,21 +165,21 @@ builder.Services.AddRateLimiter(options =>
 });
 
 
-builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<ApplicationDbContext>();
+
 builder.Services.AddScoped<IPasswordHandlerService, PasswordHandlerService>();
-builder.Services.AddScoped<IJwtService, JWTService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<GoogleService>();
+builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.AddScoped<IMemoryCache, MemoryCache>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IModelsCharacterService, ModelsCharacterService>();
 builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddScoped<IGenerationAIService, GenerationAIService>();
-builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddScoped<IGenerationAIService, AIService>();
 
 //config Mapster object
 var config = TypeAdapterConfig.GlobalSettings;

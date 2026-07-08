@@ -9,7 +9,6 @@
 	<ItemGroup>
 		<PackageReference Include="Mapster" Version="10.0.6" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.5" />
-		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.5" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.7" />
 	</ItemGroup>

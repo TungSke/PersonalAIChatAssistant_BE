@@ -1,4 +1,4 @@
-using PersonalAIAssistant.Domain.InterfaceRepository;
+using PersonalAIAssistant.Domain.Repositories;
 
 namespace PersonalAIAssistant.Domain
 {

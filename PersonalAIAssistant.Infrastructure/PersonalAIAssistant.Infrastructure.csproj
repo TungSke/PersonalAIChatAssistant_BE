@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
@@ -21,9 +21,11 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.5" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\PersonalAIAssistant.Application\PersonalAIAssistant.Application.csproj" />
 		<ProjectReference Include="..\PersonalAIAssistant.Domain\PersonalAIAssistant.Domain.csproj" />
 	</ItemGroup>
 
