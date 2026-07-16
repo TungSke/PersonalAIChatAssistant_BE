@@ -17,9 +17,7 @@ namespace PersonalAIAssistant.API.Controllers
             _characterEmotionService = characterEmotionService;
         }
 
-        [SwaggerOperation(
-        Summary = "Get all character emotion need when create"
-        )]
+        [EndpointDescription("Get all character emotions")]
         [HttpGet("get-character-emotions")]
         public async Task<IActionResult> GetAllDataEmotion()
         {
@@ -28,6 +26,7 @@ namespace PersonalAIAssistant.API.Controllers
         }
 
         [HttpGet]
+        [EndpointDescription("Get character emotion by ID")]
         public async Task<IActionResult> Get(int characterId)
         {
             var result = await _characterEmotionService.GetCharacterEmotion(characterId);

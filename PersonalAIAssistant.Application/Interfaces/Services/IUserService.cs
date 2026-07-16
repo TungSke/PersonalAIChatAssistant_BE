@@ -19,5 +19,7 @@ namespace PersonalAIAssistant.Application.Interfaces.Services
         Task<ApiResponse<string>> RefreshToken();
 
         Task<ApiResponse<string>> Logout();
+
+        Task<ApiResponse<LoginResponse>> GoogleLogin(string idToken);
     }
 }

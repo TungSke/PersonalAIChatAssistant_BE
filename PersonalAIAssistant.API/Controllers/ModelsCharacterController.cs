@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Swashbuckle.AspNetCore.Annotations;
 using PersonalAIAssistant.Application.Interfaces.Services;
+using PersonalAIAssistant.Application.DTOs.Request;
 
 namespace PersonalAIAssistant.API.Controllers
 {
@@ -19,9 +20,7 @@ namespace PersonalAIAssistant.API.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation(
-        Summary = "Get all characters that the user has not chatted with."
-        )]
+        [EndpointSummary("Get all characters that the user has not chatted with.")]
         public async Task<IActionResult> Get(int pageIndex = 1, int pageSize = 5, string? search = "")
         {
             var characters = await _modelsCharacterService.GetAllAsync(pageIndex, pageSize, search);
@@ -30,6 +29,22 @@ namespace PersonalAIAssistant.API.Controllers
                 return NotFound("No characters found.");
             }
             return Ok(characters);
+        }
+
+        [HttpPost]
+        [EndpointSummary("Create a new character.")]
+        public async Task<IActionResult> Create([FromBody] ModelCharacterCreateRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Request body is null.");
+            }
+            var createdCharacter = await _modelsCharacterService.CreateAsync(request);
+            if (createdCharacter == null)
+            {
+                return BadRequest("Failed to create character.");
+            }
+            return CreatedAtAction(nameof(Get), new { id = createdCharacter.Data?.Id }, createdCharacter);
         }
     }
 }
