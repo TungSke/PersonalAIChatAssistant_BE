@@ -1,3 +1,4 @@
+using Google.Apis.Auth;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -111,7 +112,7 @@ namespace PersonalAIAssistant.Application.Services
             await _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
 
-            return new ApiResponse<string> { Success = true, Message = "verify success"};
+            return new ApiResponse<string> { Success = true, Message = "verify success" };
         }
 
 
@@ -125,12 +126,12 @@ namespace PersonalAIAssistant.Application.Services
                 throw new KeyNotFoundException("Email not found");
             }
 
-            if(user.Status != UserStatus.Active)
+            if (user.Status != UserStatus.Active)
             {
                 throw new Exception("Account is not active");
             }
 
-            var passwordVerificationResult =  _passwordHandlerService.VerifyPassword(user.PasswordHash, request.Password);
+            var passwordVerificationResult = _passwordHandlerService.VerifyPassword(user.PasswordHash, request.Password);
             if (passwordVerificationResult != PasswordVerificationResult.Success)
             {
                 throw new UnauthorizedAccessException("Invalid credentials");
@@ -242,5 +243,59 @@ namespace PersonalAIAssistant.Application.Services
                 Message = "Logout successful"
             };
         }
+
+        public async Task<ApiResponse<LoginResponse>> GoogleLogin(string idToken)
+        {
+            GoogleJsonWebSignature.Payload payload;
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Invalid Google token"
+                };
+            }
+
+            var user = await findUserByEmail(payload.Email);
+            if (user == null)
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "User not found"
+                };
+            }
+
+            if (user.Status == UserStatus.Inactive)
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Account is inactive, please contact support."
+                };
+            }
+            var accessToken = await _jWTService.GenerateJwtToken(user);
+            var refreshToken = await _jWTService.GenerateRefreshToken();
+
+            user.RefreshToken = await _jWTService.GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            _authCookieService.SetAuthCookies(accessToken, refreshToken);
+
+            await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiResponse<LoginResponse>
+            {
+                Success = true,
+                Message = "Login with Google successful",
+                Data = MapUser(user)
+            };
+        }
+
     }
 }

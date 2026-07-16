@@ -1,11 +1,14 @@
+using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
-using MockQueryable;
 using Moq;
+using MockQueryable.Moq;
 using PersonalAIAssistant.Application.Interfaces.Infrastructure;
 using PersonalAIAssistant.Application.Services;
 using PersonalAIAssistant.Domain;
 using PersonalAIAssistant.Domain.Entities;
 using Xunit;
+
 
 namespace PersonalAIAssistant.Test.Services
 {
@@ -23,8 +26,8 @@ namespace PersonalAIAssistant.Test.Services
             _cacheServiceMock = new Mock<ICacheService>();
 
             _conversationService = new ConversationService(
-                _unitOfWorkMock.Object, 
-                _tokenServiceMock.Object, 
+                _unitOfWorkMock.Object,
+                _tokenServiceMock.Object,
                 _cacheServiceMock.Object);
         }
 
@@ -45,7 +48,7 @@ namespace PersonalAIAssistant.Test.Services
                 new Conversation { Id = targetConversationId, UserId = currentUserId, Title = "Private Chat", Status = PersonalAIAssistant.Domain.Enums.ConversationStatus.Active }
             };
 
-            var mockQueryable = conversations.AsQueryable().BuildMock();
+            var mockQueryable = conversations.AsQueryable();
 
             // Mock the repository to return the conversations
             _unitOfWorkMock.Setup(u => u.ConversationRepository.GetAll())
@@ -58,7 +61,7 @@ namespace PersonalAIAssistant.Test.Services
             // The DeleteConversation method currently returns an ApiResponse which may have Success = true with Message "Delete success!" 
             // IF the conversation does not exist (see logic in ConversationService) it will not Remove but still report success.
             // The most important thing: Ensure Remove() is NEVER called.
-            
+
             _unitOfWorkMock.Verify(u => u.ConversationRepository.Remove(It.IsAny<Conversation>()), Times.Never);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Never);
         }
@@ -68,7 +71,7 @@ namespace PersonalAIAssistant.Test.Services
         {
             // Arrange
             int currentUserId = 1;
-            
+
             _tokenServiceMock.Setup(x => x.GetUserId()).ReturnsAsync(currentUserId);
 
             // DB contains conversations for multiple users
@@ -79,7 +82,7 @@ namespace PersonalAIAssistant.Test.Services
                 new Conversation { Id = 3, UserId = 1, Title = "My Chat 2", Status = PersonalAIAssistant.Domain.Enums.ConversationStatus.Active, ModelsCharacter = CreateDummyCharacter() }
             };
 
-            var mockQueryable = conversations.AsQueryable().BuildMock();
+            var mockQueryable = conversations.AsQueryable();
 
             _unitOfWorkMock.Setup(u => u.ConversationRepository.GetAll())
                            .Returns(mockQueryable);

@@ -18,6 +18,7 @@ namespace PersonalAIAssistant.API.Controllers
         }
 
         [HttpPost("register")]
+        [EndpointDescription("Register a new user")]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
             var response = await _userService.Register(request);
@@ -87,6 +88,17 @@ namespace PersonalAIAssistant.API.Controllers
                 return Ok(response);
             }
 
+            return BadRequest(response);
+        }
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin(string idToken)
+        {
+            var response = await _userService.GoogleLogin(idToken);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
             return BadRequest(response);
         }
     }

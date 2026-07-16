@@ -5,6 +5,8 @@ using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using PersonalAIAssistant.Application.DTOs.Request;
 using PersonalAIAssistant.Application.Interfaces.Services;
+using System.ComponentModel;
+using PersonalAIAssistant.Application.DTOs.Response;
 
 namespace PersonalAIAssistant.API.Controllers
 {
@@ -21,21 +23,19 @@ namespace PersonalAIAssistant.API.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation(
-    Summary = "Get messages in a conversation",
-    Description = "Supports initial load, loading older messages (beforeMessageId), and fetching new messages (afterMessageId)."
-)]
+        [EndpointSummary("Get messages in a conversation")]
+        [EndpointDescription("Supports initial load, loading older messages (beforeMessageId), and fetching new messages")]
         public async Task<IActionResult> GetMessages(
-    [FromQuery][Required]
-    [SwaggerParameter("The ID of the conversation to retrieve messages from", Required = true)]
-    int conversationId,
+            [FromQuery][Required]
+            [Description("The ID of the conversation to retrieve messages from")]
+            int conversationId,
 
-    [FromQuery]
-    int limit = 30,
+            [FromQuery]
+            int limit = 30,
 
-    [FromQuery]
-    [SwaggerParameter("Fetch messages with IDs less than this value (used for loading older messages when scrolling up)")]
-    long? beforeMessageId = null)
+            [FromQuery]
+            [Description("Fetch messages with IDs less than this value (used for loading older messages when scrolling up)")]
+            long? beforeMessageId = null)
         {
             var response = await _service.GetMessagesFromConversation(
                 conversationId,
@@ -47,11 +47,12 @@ namespace PersonalAIAssistant.API.Controllers
         }
 
         [HttpPost]
-        [SwaggerOperation(Summary = "Create a new message in a conversation")]
+        [EndpointSummary("Create a new message in a conversation")]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(MessageResponse))]
         public async Task<IActionResult> CreateMessage(MessageRequest request)
         {
             var response = await _service.CreateMessage(request);
-            if(response.Success == true)
+            if (response.Success == true)
             {
                 return Ok(response);
             }

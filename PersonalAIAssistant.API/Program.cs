@@ -1,25 +1,27 @@
 using Mapster;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using PersonalAIAssistant.API;
+using PersonalAIAssistant.API.Middleware;
+using PersonalAIAssistant.Application.Interfaces.Infrastructure;
+using PersonalAIAssistant.Application.Interfaces.Services;
+using PersonalAIAssistant.Application.Mappings;
+using PersonalAIAssistant.Application.Services;
+using PersonalAIAssistant.Domain;
+using PersonalAIAssistant.Infrastructure;
+using PersonalAIAssistant.Infrastructure.Services;
+using Scalar.AspNetCore;
 using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-using PersonalAIAssistant.API;
-using PersonalAIAssistant.API.Middleware;
-using PersonalAIAssistant.Domain;
-using PersonalAIAssistant.Infrastructure;
-using PersonalAIAssistant.Application.Interfaces.Services;
-using PersonalAIAssistant.Application.Interfaces.Infrastructure;
-using PersonalAIAssistant.Infrastructure.Services;
-using PersonalAIAssistant.Application.Services;
-using PersonalAIAssistant.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,7 +76,22 @@ builder.Services.AddSwaggerGen(options =>
     {
         [new OpenApiSecuritySchemeReference("bearer", document)] = []
     }); // add bearer token support
-    options.EnableAnnotations(); // enable swagger annotations
+});
+
+
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info = new OpenApiInfo
+        {
+            Title = "PersonalAI API",
+            Version = "v1",
+            Description = "A full API for project"
+        };
+        return Task.CompletedTask;
+    });
+
 });
 
 
@@ -142,6 +159,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.ConnectAsync(connectionString).GetAwaiter().GetResult();
 });
 
+// rate limit policy
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("messagePolicy", context =>
@@ -189,12 +207,16 @@ builder.Services.AddSingleton(config);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline openapi scalar.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
+
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseRateLimiter();
@@ -211,7 +233,6 @@ app.MapControllers();
 // Add health check endpoint
 app.UseHealthChecks("/health", new HealthCheckOptions
 {
-    
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";

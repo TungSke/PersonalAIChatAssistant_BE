@@ -5,6 +5,8 @@ using PersonalAIAssistant.Application.Interfaces.Services;
 using PersonalAIAssistant.Domain;
 using PersonalAIAssistant.Domain.Base;
 using PersonalAIAssistant.Application.Interfaces.Infrastructure;
+using PersonalAIAssistant.Domain.Entities;
+using PersonalAIAssistant.Application.DTOs.Request;
 
 namespace PersonalAIAssistant.Application.Services
 {
@@ -20,11 +22,9 @@ namespace PersonalAIAssistant.Application.Services
             _redisCacheService = redisCacheService ?? throw new ArgumentNullException(nameof(redisCacheService));
         }
 
-        public async Task<ApiResponse<IEnumerable<ModelCharacterResponse>>> GetAllAsync(
-                                                                                        int pageIndex,
+        public async Task<ApiResponse<IEnumerable<ModelCharacterResponse>>> GetAllAsync(int pageIndex,
                                                                                         int pageSize,
-                                                                                        string? search)
-        {
+                                                                                        string? search){
             if (pageIndex < 1) pageIndex = 1;
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 50) pageSize = 50;
@@ -65,5 +65,27 @@ namespace PersonalAIAssistant.Application.Services
         }
 
 
+        public async Task<ApiResponse<ModelCharacterResponse>> CreateAsync(ModelCharacterCreateRequest request)
+        {
+            if (request == null)
+            {
+                return new ApiResponse<ModelCharacterResponse>
+                {
+                    Success = false,
+                    Message = "Request body is null.",
+                    Data = null
+                };
+            }
+            var newCharacter = request.Adapt<ModelsCharacter>();
+            await _unitOfWork.ModelRepository.AddAsync(newCharacter);
+            await _unitOfWork.SaveChangesAsync();
+            var response = newCharacter.Adapt<ModelCharacterResponse>();
+            return new ApiResponse<ModelCharacterResponse>
+            {
+                Success = true,
+                Message = "Model character created successfully.",
+                Data = response
+            };
+        }
     }
 }
