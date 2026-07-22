@@ -14,10 +14,10 @@ namespace PersonalAIAssistant.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _jwtService;
-        private readonly IGenerationAIService _generationAIService;
+        private readonly IAIService _generationAIService;
         private readonly ICacheService _redisCacheService;
 
-        public MessageService(IUnitOfWork unitOfWork, ITokenService jwtService, IGenerationAIService generationAIService, ICacheService redisCacheService)
+        public MessageService(IUnitOfWork unitOfWork, ITokenService jwtService, IAIService generationAIService, ICacheService redisCacheService)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;

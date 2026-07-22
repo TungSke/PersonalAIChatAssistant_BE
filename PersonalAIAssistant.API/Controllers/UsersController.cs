@@ -101,5 +101,27 @@ namespace PersonalAIAssistant.API.Controllers
             }
             return BadRequest(response);
         }
+
+        [HttpPost("register-with-phone-number")]
+        public async Task<IActionResult> RegisterWithPhoneNumber(RegisterWithPhoneNumberRequest request)
+        {
+            var response = await _userService.RegisterWithPhoneNumber(request);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost("verify-phone-number")]
+        public async Task<IActionResult> VerifyPhoneNumber(VerifyPhoneNumberRequest request)
+        {
+            var response = await _userService.VerifyPhoneNumber(request);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }
