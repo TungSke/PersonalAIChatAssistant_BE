@@ -1,3 +1,6 @@
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth.OAuth2;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +34,6 @@ builder.Services.AddControllers(opts =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
-
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -196,7 +198,7 @@ builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IModelsCharacterService, ModelsCharacterService>();
 builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddScoped<IGenerationAIService, AIService>();
+builder.Services.AddScoped<IAIService, AIService>();
 
 //config Mapster object
 var config = TypeAdapterConfig.GlobalSettings;

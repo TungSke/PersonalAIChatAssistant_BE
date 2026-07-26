@@ -2,7 +2,7 @@ using PersonalAIAssistant.Domain.Entities;
 
 namespace PersonalAIAssistant.Application.Interfaces.Infrastructure
 {
-    public interface IGenerationAIService
+    public interface IAIService
     {
         Task<string> GenerateReply(
             Conversation conversation,

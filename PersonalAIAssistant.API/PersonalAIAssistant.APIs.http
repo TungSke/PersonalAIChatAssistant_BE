@@ -1,6 +1,0 @@
-@PersonalAIAssistant.APIs_HostAddress = http://localhost:5028
-
-GET {{PersonalAIAssistant.APIs_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

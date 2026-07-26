@@ -7,7 +7,7 @@ using PersonalAIAssistant.Application.Interfaces.Infrastructure;
 
 namespace PersonalAIAssistant.Infrastructure.Services
 {
-    public class AIService : IGenerationAIService
+    public class AIService : IAIService
     {
         // Gemini model is used for generating replies and summarizing conversations.
         private readonly Client _client;

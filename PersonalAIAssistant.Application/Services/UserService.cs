@@ -261,21 +261,29 @@ namespace PersonalAIAssistant.Application.Services
             }
 
             var user = await findUserByEmail(payload.Email);
+
+            // If the user does not exist, create a new user
             if (user == null)
             {
-                return new ApiResponse<LoginResponse>
+                var newUser = new User
                 {
-                    Success = false,
-                    Message = "User not found"
+                    Username = payload.Name,
+                    Email = payload.Email,
+                    PhoneNumber = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = UserStatus.Active
                 };
+                await _unitOfWork.UserRepository.AddAsync(newUser);
+                await _unitOfWork.SaveChangesAsync();
+                user = newUser;
             }
 
-            if (user.Status == UserStatus.Inactive)
+            if (user.Status != UserStatus.Active)
             {
                 return new ApiResponse<LoginResponse>
                 {
                     Success = false,
-                    Message = "Account is inactive, please contact support."
+                    Message = "Account is not active, please contact support."
                 };
             }
             var accessToken = await _jWTService.GenerateJwtToken(user);
@@ -296,6 +304,5 @@ namespace PersonalAIAssistant.Application.Services
                 Data = MapUser(user)
             };
         }
-
     }
 }
