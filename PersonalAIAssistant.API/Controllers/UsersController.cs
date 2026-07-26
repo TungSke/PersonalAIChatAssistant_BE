@@ -92,9 +92,9 @@ namespace PersonalAIAssistant.API.Controllers
         }
 
         [HttpPost("google-login")]
-        public async Task<IActionResult> GoogleLogin(string idToken)
+        public async Task<IActionResult> GoogleLogin(GoogleLoginRequest request)
         {
-            var response = await _userService.GoogleLogin(idToken);
+            var response = await _userService.GoogleLogin(request);
             if (response.Success)
             {
                 return Ok(response);
