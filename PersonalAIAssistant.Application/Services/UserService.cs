@@ -22,16 +22,14 @@ namespace PersonalAIAssistant.Application.Services
         private readonly ITokenService _jWTService;
         private readonly IGoogleService _googleService;
         private readonly IAuthCookieService _authCookieService;
-        private readonly IFirebaseService _firebaseService;
 
-        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, ITokenService jWTService, IGoogleService googleService, IAuthCookieService authCookieService, IFirebaseService firebaseService)
+        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, ITokenService jWTService, IGoogleService googleService, IAuthCookieService authCookieService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _passwordHandlerService = passwordHandlerService ?? throw new ArgumentNullException(nameof(passwordHandlerService));
             _jWTService=jWTService;
             _googleService=googleService;
             _authCookieService = authCookieService ?? throw new ArgumentNullException(nameof(authCookieService));
-            _firebaseService = firebaseService;
         }
 
         private static LoginResponse MapUser(User user)
@@ -263,21 +261,29 @@ namespace PersonalAIAssistant.Application.Services
             }
 
             var user = await findUserByEmail(payload.Email);
+
+            // If the user does not exist, create a new user
             if (user == null)
             {
-                return new ApiResponse<LoginResponse>
+                var newUser = new User
                 {
-                    Success = false,
-                    Message = "User not found"
+                    Username = payload.Name,
+                    Email = payload.Email,
+                    PhoneNumber = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = UserStatus.Active
                 };
+                await _unitOfWork.UserRepository.AddAsync(newUser);
+                await _unitOfWork.SaveChangesAsync();
+                user = newUser;
             }
 
-            if (user.Status == UserStatus.Inactive)
+            if (user.Status != UserStatus.Active)
             {
                 return new ApiResponse<LoginResponse>
                 {
                     Success = false,
-                    Message = "Account is inactive, please contact support."
+                    Message = "Account is not active, please contact support."
                 };
             }
             var accessToken = await _jWTService.GenerateJwtToken(user);
@@ -296,63 +302,6 @@ namespace PersonalAIAssistant.Application.Services
                 Success = true,
                 Message = "Login with Google successful",
                 Data = MapUser(user)
-            };
-        }
-
-        public async Task<ApiResponse<string>> RegisterWithPhoneNumber(RegisterWithPhoneNumberRequest request)
-        {
-            var existingUser = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.PhoneNumber == request.PhoneNumber);
-
-            if (existingUser != null)
-            {
-                throw new Exception("Phone number already registered");
-            }
-            await _firebaseService.CreatePhoneUserAsync(request.PhoneNumber);
-
-            var newUser = new User
-            {
-                PhoneNumber = request.PhoneNumber,
-                Status = UserStatus.Inactive,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            return new ApiResponse<string>
-            {
-                Success = true,
-                Message = "User registered successfully. Please verify your phone number.",
-            };
-        }
-
-        public async Task<ApiResponse<string>> VerifyPhoneNumber(VerifyPhoneNumberRequest request)
-        {
-            var verifyStatus = await _firebaseService.VerifyPhoneNumber(request.uid, request.PhoneNumber);
-
-            if (!verifyStatus)
-            {
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Failed to verify phone number."
-                };
-            }
-
-            var user = await _unitOfWork.UserRepository.GetAll().FirstOrDefaultAsync(u => u.PhoneNumber == request.PhoneNumber);
-            if (user == null)
-            {
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "User not found."
-                };
-            }
-
-            user.Status = UserStatus.Active;
-            await _unitOfWork.UserRepository.Update(user);
-            await _unitOfWork.SaveChangesAsync();
-            return new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Phone number verified successfully.",
             };
         }
     }

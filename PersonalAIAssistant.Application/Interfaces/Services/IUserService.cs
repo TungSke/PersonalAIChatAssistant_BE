@@ -21,9 +21,5 @@ namespace PersonalAIAssistant.Application.Interfaces.Services
         Task<ApiResponse<string>> Logout();
 
         Task<ApiResponse<LoginResponse>> GoogleLogin(string idToken);
-
-        Task<ApiResponse<string>> RegisterWithPhoneNumber(RegisterWithPhoneNumberRequest request);
-
-        Task<ApiResponse<string>> VerifyPhoneNumber(VerifyPhoneNumberRequest request);
     }
 }

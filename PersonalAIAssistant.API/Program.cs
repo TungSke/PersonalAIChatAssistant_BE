@@ -35,22 +35,6 @@ builder.Services.AddControllers(opts =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-
-// Create firebase app instance
-var firebaseConfig = builder.Configuration.GetSection("Firebase");
-
-if (firebaseConfig.Exists())
-{
-    // Chuyển Section thành chuỗi JSON hợp lệ
-    string jsonString = JsonSerializer.Serialize(firebaseConfig.Get<Dictionary<string, object>>());
-
-    FirebaseApp.Create(new AppOptions
-    {
-        Credential = GoogleCredential.FromJson(jsonString)
-    });
-}
-
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
@@ -215,7 +199,6 @@ builder.Services.AddScoped<IModelsCharacterService, ModelsCharacterService>();
 builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IAIService, AIService>();
-builder.Services.AddScoped<IFirebaseService, FirebaseService>();
 
 //config Mapster object
 var config = TypeAdapterConfig.GlobalSettings;
