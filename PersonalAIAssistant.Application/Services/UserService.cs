@@ -244,12 +244,12 @@ namespace PersonalAIAssistant.Application.Services
             };
         }
 
-        public async Task<ApiResponse<LoginResponse>> GoogleLogin(string idToken)
+        public async Task<ApiResponse<LoginResponse>> GoogleLogin(GoogleLoginRequest request)
         {
             GoogleJsonWebSignature.Payload payload;
             try
             {
-                payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+                payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
             }
             catch (Exception)
             {
@@ -269,7 +269,6 @@ namespace PersonalAIAssistant.Application.Services
                 {
                     Username = payload.Name,
                     Email = payload.Email,
-                    PhoneNumber = string.Empty,
                     CreatedAt = DateTime.UtcNow,
                     Status = UserStatus.Active
                 };
