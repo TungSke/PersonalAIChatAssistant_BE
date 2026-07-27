@@ -36,7 +36,7 @@ namespace PersonalAIAssistant.Application.Services
         {
             return new LoginResponse
             {
-                UserId = user.Id,
+                Id = user.Id,
                 Username = user.Username,
                 Email = user.Email
             };
