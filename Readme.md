@@ -1,6 +1,6 @@
 # 🤖 Personal AI Assistant Backend
 
-![Build]![Build](https://github.com/TungSke/PersonalAIChatAssistant_BE/actions/workflows/test.yaml/badge.svg)
+![Build](https://github.com/TungSke/PersonalAIChatAssistant_BE/actions/workflows/test.yaml/badge.svg)
 ![.NET](https://img.shields.io/badge/.NET-10-blueviolet)
 ![License](https://img.shields.io/github/license/TungSke/PersonalAIChatAssistant_BE)
 ![Last Commit](https://img.shields.io/github/last-commit/TungSke/PersonalAIChatAssistant_BE)
