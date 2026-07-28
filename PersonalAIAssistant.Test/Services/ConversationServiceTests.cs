@@ -12,14 +12,14 @@ using MockQueryable.Moq;
 
 namespace PersonalAIAssistant.Test.Services
 {
-    public class ConversationSecurityTests
+    public class ConversationServiceTests
     {
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<ITokenService> _tokenServiceMock;
         private readonly Mock<ICacheService> _cacheServiceMock;
         private readonly ConversationService _conversationService;
 
-        public ConversationSecurityTests()
+        public ConversationServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _tokenServiceMock = new Mock<ITokenService>();
@@ -30,8 +30,6 @@ namespace PersonalAIAssistant.Test.Services
                 _tokenServiceMock.Object,
                 _cacheServiceMock.Object);
         }
-
-        #region GetConversationAsync
 
         [Fact]
         public async Task GetConversationAsync_ShouldOnlyReturnCurrentUserConversations_DataLeakPrevention()
@@ -80,8 +78,6 @@ namespace PersonalAIAssistant.Test.Services
             result.Success.Should().BeTrue();
             result.Data.Should().BeEmpty();
         }
-
-        #endregion
 
         #region CreateConversation
 

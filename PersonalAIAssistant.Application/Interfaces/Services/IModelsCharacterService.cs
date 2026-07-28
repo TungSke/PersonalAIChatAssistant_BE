@@ -9,6 +9,10 @@ namespace PersonalAIAssistant.Application.Interfaces.Services
     {
         Task<ApiResponse<IEnumerable<ModelCharacterResponse>>> GetAllAsync(int pageIndex, int pageSize, string search);
 
-        Task<ApiResponse<ModelCharacterResponse>> CreateAsync(ModelCharacterCreateRequest request);
+        Task<ApiResponse<ModelCharacterResponse>> CreateAsync(ModelCharacterRequest request);
+
+        Task<ApiResponse<ModelCharacterResponse>> UpdateAsync(int id, ModelCharacterRequest request);
+
+        Task<ApiResponse<bool>> DeleteAsync(int id);
     }
 }

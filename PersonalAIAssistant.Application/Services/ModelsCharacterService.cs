@@ -13,8 +13,9 @@ namespace PersonalAIAssistant.Application.Services
     public class ModelsCharacterService : IModelsCharacterService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ITokenService _jwtService;    
+        private readonly ITokenService _jwtService;
         private readonly ICacheService _redisCacheService;
+
         public ModelsCharacterService(IUnitOfWork unitOfWork, ITokenService jwtService, ICacheService redisCacheService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -24,7 +25,8 @@ namespace PersonalAIAssistant.Application.Services
 
         public async Task<ApiResponse<IEnumerable<ModelCharacterResponse>>> GetAllAsync(int pageIndex,
                                                                                         int pageSize,
-                                                                                        string? search){
+                                                                                        string? search)
+        {
             if (pageIndex < 1) pageIndex = 1;
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 50) pageSize = 50;
@@ -65,7 +67,7 @@ namespace PersonalAIAssistant.Application.Services
         }
 
 
-        public async Task<ApiResponse<ModelCharacterResponse>> CreateAsync(ModelCharacterCreateRequest request)
+        public async Task<ApiResponse<ModelCharacterResponse>> CreateAsync(ModelCharacterRequest request)
         {
             if (request == null)
             {
@@ -85,6 +87,52 @@ namespace PersonalAIAssistant.Application.Services
                 Success = true,
                 Message = "Model character created successfully.",
                 Data = response
+            };
+        }
+
+        public async Task<ApiResponse<ModelCharacterResponse>> UpdateAsync(int id, ModelCharacterRequest request)
+        {
+            var existingCharacter = await _unitOfWork.ModelRepository.FindAsync(id);
+            if (existingCharacter == null)
+            {
+                return new ApiResponse<ModelCharacterResponse>
+                {
+                    Success = false,
+                    Message = "Model character not found.",
+                    Data = null
+                };
+            }
+            request.Adapt(existingCharacter);
+            await _unitOfWork.ModelRepository.Update(existingCharacter);
+            await _unitOfWork.SaveChangesAsync();
+            var response = existingCharacter.Adapt<ModelCharacterResponse>();
+            return new ApiResponse<ModelCharacterResponse>
+            {
+                Success = true,
+                Message = "Model character updated successfully.",
+                Data = response
+            };
+        }
+
+        public async Task<ApiResponse<bool>> DeleteAsync(int id)
+        {
+            var existingCharacter = await _unitOfWork.ModelRepository.FindAsync(id);
+            if (existingCharacter == null)
+            {
+                return new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Model character not found.",
+                    Data = false
+                };
+            }
+            await _unitOfWork.ModelRepository.Remove(existingCharacter);
+            await _unitOfWork.SaveChangesAsync();
+            return new ApiResponse<bool>
+            {
+                Success = true,
+                Message = "Model character deleted successfully.",
+                Data = true
             };
         }
     }
