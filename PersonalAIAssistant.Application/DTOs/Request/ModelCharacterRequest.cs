@@ -4,7 +4,7 @@ using System.Text;
 
 namespace PersonalAIAssistant.Application.DTOs.Request
 {
-    public class ModelCharacterCreateRequest
+    public class ModelCharacterRequest
     {
         public required string Name { get; set; }
         public required string Backstory { get; set; }

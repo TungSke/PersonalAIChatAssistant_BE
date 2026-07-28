@@ -33,7 +33,7 @@ namespace PersonalAIAssistant.API.Controllers
 
         [HttpPost]
         [EndpointSummary("Create a new character.")]
-        public async Task<IActionResult> Create([FromBody] ModelCharacterCreateRequest request)
+        public async Task<IActionResult> Create([FromBody] ModelCharacterRequest request)
         {
             if (request == null)
             {
@@ -45,6 +45,34 @@ namespace PersonalAIAssistant.API.Controllers
                 return BadRequest("Failed to create character.");
             }
             return CreatedAtAction(nameof(Get), new { id = createdCharacter.Data?.Id }, createdCharacter);
+        }
+
+        [HttpPut("{id}")]
+        [EndpointSummary("Update an existing character.")]
+        public async Task<IActionResult> Update(int id, [FromBody] ModelCharacterRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Request body is null.");
+            }
+            var updatedCharacter = await _modelsCharacterService.UpdateAsync(id, request);
+            if (updatedCharacter == null)
+            {
+                return NotFound($"Character with ID {id} not found.");
+            }
+            return Ok(updatedCharacter);
+        }
+
+        [HttpDelete("{id}")]
+        [EndpointSummary("Delete a character.")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deletedCharacter = await _modelsCharacterService.DeleteAsync(id);
+            if (deletedCharacter == null)
+            {
+                return NotFound($"Character with ID {id} not found.");
+            }
+            return Ok(deletedCharacter);
         }
     }
 }
