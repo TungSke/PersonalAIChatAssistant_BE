@@ -17,11 +17,7 @@ namespace PersonalAIAssistant.Infrastructure.Services
 
         public void SetAuthCookies(string accessToken, string refreshToken)
         {
-            var response = _httpContextAccessor.HttpContext?.Response;
-            if (response == null)
-            {
-                throw new InvalidOperationException("HTTP response is not available.");
-            }
+            var response = GetResponse();
 
             response.Cookies.Append(AccessTokenCookieName, accessToken, BuildCookieOptions(TimeSpan.FromHours(1)));
             response.Cookies.Append(RefreshTokenCookieName, refreshToken, BuildCookieOptions(TimeSpan.FromDays(7)));
@@ -29,20 +25,10 @@ namespace PersonalAIAssistant.Infrastructure.Services
 
         public void ClearAuthCookies()
         {
-            var response = _httpContextAccessor.HttpContext?.Response;
-            if (response == null)
-            {
-                return;
-            }
+            var response = GetResponse();
 
-            var expired = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = _httpContextAccessor.HttpContext?.Request.IsHttps ?? true,
-                SameSite = (_httpContextAccessor.HttpContext?.Request.IsHttps ?? true) ? SameSiteMode.None : SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddDays(-1),
-                Path = "/"
-            };
+            var expired = BuildCookieOptions(TimeSpan.Zero);
+            expired.Expires = DateTimeOffset.UtcNow.AddDays(-1);
 
             response.Cookies.Append(AccessTokenCookieName, string.Empty, expired);
             response.Cookies.Append(RefreshTokenCookieName, string.Empty, expired);
@@ -53,17 +39,22 @@ namespace PersonalAIAssistant.Infrastructure.Services
             return _httpContextAccessor.HttpContext?.Request.Cookies[RefreshTokenCookieName];
         }
 
-        private CookieOptions BuildCookieOptions(TimeSpan lifetime)
+        private HttpResponse GetResponse()
         {
-            var isHttps = _httpContextAccessor.HttpContext?.Request.IsHttps ?? true;
+            return _httpContextAccessor.HttpContext?.Response
+                ?? throw new InvalidOperationException("HTTP response is not available.");
+        }
 
+        private static CookieOptions BuildCookieOptions(TimeSpan lifetime)
+        {
             return new CookieOptions
             {
                 HttpOnly = true,
-                Secure = isHttps,
-                SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax,
+                Secure = true,                  
+                SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.Add(lifetime),
-                Path = "/"
+                Path = "/",
+                IsEssential = true
             };
         }
     }

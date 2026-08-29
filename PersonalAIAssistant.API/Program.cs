@@ -1,9 +1,5 @@
-using FirebaseAdmin;
-using FirebaseAdmin.Auth;
-using Google.Apis.Auth.OAuth2;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
@@ -103,16 +99,16 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    // Configure JWT Bearer options
     options.Events = new JwtBearerEvents
     {
+        // This event is triggered when a message is received. We can extract the token from the cookie here.
         OnMessageReceived = context =>
         {
-            var accessToken = context.Request.Cookies["PersonalAI_access_token"];
-            if (!string.IsNullOrWhiteSpace(accessToken))
+            if (context.Request.Cookies.ContainsKey("PersonalAI_access_token"))
             {
-                context.Token = accessToken;
+                context.Token = context.Request.Cookies["PersonalAI_access_token"];
             }
-
             return Task.CompletedTask;
         }
     };
@@ -184,21 +180,68 @@ builder.Services.AddRateLimiter(options =>
 });
 
 
-builder.Services.AddScoped<ICacheService, CacheService>();
-builder.Services.AddScoped<ApplicationDbContext>();
+// ============================================================
+// Infrastructure Services
+// ============================================================
 
-builder.Services.AddScoped<IPasswordHandlerService, PasswordHandlerService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
+// Redis cache
+// Singleton: IConnectionMultiplexer / cache service should be long-lived
+builder.Services.AddSingleton<ICacheService, CacheService>();
+
+// Google AI / External API
+// Singleton: stateless service and reusable client/configuration
+builder.Services.AddSingleton<IGoogleService, GoogleService>();
+
+// Authentication & Security
+// Transient: stateless password hashing/verification service
+builder.Services.AddTransient<IPasswordHandlerService, PasswordHandlerService>();
+
+// Singleton: stateless JWT generation/validation service
+builder.Services.AddSingleton<ITokenService, TokenService>();
+
+// Scoped: works with the current HTTP request/response
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
+// ============================================================
+// Database
+// ============================================================
+
+// Scoped: one DbContext per HTTP request
+// Prefer AddDbContext<T>() instead of AddSingleton<T>()
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    // options.UseSqlServer(...);
+});
+
+
+// ============================================================
+// Application Services
+// ============================================================
+
+// Scoped: business/application services
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IGoogleService, GoogleService>();
-builder.Services.AddScoped<IMemoryCache, MemoryCache>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IModelsCharacterService, ModelsCharacterService>();
 builder.Services.AddScoped<ICharacterEmotionService, CharacterEmotionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IAIService, AIService>();
+
+
+// ============================================================
+// Unit of Work
+// ============================================================
+
+// Scoped: shares the same DbContext within the current request
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
+// ============================================================
+// Memory Cache
+// ============================================================
+
+// Singleton: in-memory cache is shared across the application
+builder.Services.AddMemoryCache();
 
 //config Mapster object
 var config = TypeAdapterConfig.GlobalSettings;

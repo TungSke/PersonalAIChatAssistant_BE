@@ -530,4 +530,4 @@ FodyWeavers.xsd
 .env
 PersonalAIAssistant.API/appsettings.*.json
 plan.md
-PersonalAIAssistant.Infrastructure/SeedData.cs
+PersonalAIAssistant.Infrastructure/SeedDataSample.cs

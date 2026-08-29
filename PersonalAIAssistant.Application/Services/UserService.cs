@@ -19,16 +19,16 @@ namespace PersonalAIAssistant.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHandlerService _passwordHandlerService;
-        private readonly ITokenService _jWTService;
+        private readonly ITokenService _tokenService;
         private readonly IGoogleService _googleService;
         private readonly IAuthCookieService _authCookieService;
 
-        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, ITokenService jWTService, IGoogleService googleService, IAuthCookieService authCookieService)
+        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, ITokenService tokenService, IGoogleService googleService, IAuthCookieService authCookieService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _passwordHandlerService = passwordHandlerService ?? throw new ArgumentNullException(nameof(passwordHandlerService));
-            _jWTService=jWTService;
-            _googleService=googleService;
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _googleService = googleService ?? throw new ArgumentNullException(nameof(googleService));
             _authCookieService = authCookieService ?? throw new ArgumentNullException(nameof(authCookieService));
         }
 
@@ -137,12 +137,12 @@ namespace PersonalAIAssistant.Application.Services
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
-            user.RefreshToken = await _jWTService.GenerateRefreshToken();
+            user.RefreshToken = await _tokenService.GenerateRefreshToken();
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Set refresh token expiry time
             await _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
 
-            var jwtToken = await _jWTService.GenerateJwtToken(user);
+            var jwtToken = await _tokenService.GenerateJwtToken(user);
             _authCookieService.SetAuthCookies(jwtToken, user.RefreshToken);
 
             return new ApiResponse<LoginResponse>
@@ -155,7 +155,7 @@ namespace PersonalAIAssistant.Application.Services
 
         public async Task<ApiResponse<LoginResponse>> Me()
         {
-            var userId = await _jWTService.GetUserId();
+            var userId = await _tokenService.GetUserId();
             if (userId <= 0)
             {
                 return new ApiResponse<LoginResponse>
@@ -205,8 +205,8 @@ namespace PersonalAIAssistant.Application.Services
                 };
             }
 
-            var jwtToken = await _jWTService.GenerateJwtToken(user);
-            user.RefreshToken = await _jWTService.GenerateRefreshToken();
+            var jwtToken = await _tokenService.GenerateJwtToken(user);
+            user.RefreshToken = await _tokenService.GenerateRefreshToken();
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Set new refresh token expiry time
             await _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
@@ -285,10 +285,10 @@ namespace PersonalAIAssistant.Application.Services
                     Message = "Account is not active, please contact support."
                 };
             }
-            var accessToken = await _jWTService.GenerateJwtToken(user);
-            var refreshToken = await _jWTService.GenerateRefreshToken();
+            var accessToken = await _tokenService.GenerateJwtToken(user);
+            var refreshToken = await _tokenService.GenerateRefreshToken();
 
-            user.RefreshToken = await _jWTService.GenerateRefreshToken();
+            user.RefreshToken = await _tokenService.GenerateRefreshToken();
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
             _authCookieService.SetAuthCookies(accessToken, refreshToken);
