@@ -25,7 +25,7 @@ namespace PersonalAIAssistant.Application.Services
 
         public async Task<ApiResponse<List<ConversationResponse>>> GetConversationAsync()
         {
-            var userId = await _jwtService.GetUserId();
+            var userId = _jwtService.GetUserId();
 
             var conversations = await _unitOfWork
                 .ConversationRepository
@@ -45,7 +45,7 @@ namespace PersonalAIAssistant.Application.Services
 
         public async Task<ApiResponse<ConversationResponse>> CreateConversation(ConversationRequest request)
         {
-            var userId = await _jwtService.GetUserId();
+            var userId = _jwtService.GetUserId();
 
             var modelCharacter = await _unitOfWork.ModelRepository
                 .FindAsync(request.ModelCharacterId);
@@ -95,7 +95,7 @@ namespace PersonalAIAssistant.Application.Services
         {
             try
             {
-                var userId = await _jwtService.GetUserId();
+                var userId = _jwtService.GetUserId();
                 var conversationExisted = await _unitOfWork.ConversationRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
                 if (conversationExisted != null)
                 {

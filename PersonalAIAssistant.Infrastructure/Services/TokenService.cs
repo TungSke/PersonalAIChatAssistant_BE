@@ -44,11 +44,16 @@ namespace PersonalAIAssistant.Infrastructure.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<int> GetUserId()
+        public int GetUserId()
         {
-            var userId = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var userIdInt = userId != null ? int.Parse(userId) : 0;
-            return userIdInt;
+            var user = _httpContextAccessor.HttpContext?.User;
+
+            if (user?.Identity?.IsAuthenticated != true)
+                return 0;
+
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            return int.TryParse(userId, out var id) ? id : 0;
         }
 
         public async Task<string> GenerateRefreshToken()

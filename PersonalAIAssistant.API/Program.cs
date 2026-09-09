@@ -204,18 +204,6 @@ builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 
 
 // ============================================================
-// Database
-// ============================================================
-
-// Scoped: one DbContext per HTTP request
-// Prefer AddDbContext<T>() instead of AddSingleton<T>()
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    // options.UseSqlServer(...);
-});
-
-
-// ============================================================
 // Application Services
 // ============================================================
 

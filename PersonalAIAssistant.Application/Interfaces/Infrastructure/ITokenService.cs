@@ -5,7 +5,7 @@ namespace PersonalAIAssistant.Application.Interfaces.Infrastructure
     public interface ITokenService
     {
         Task<string> GenerateJwtToken(User user);
-        Task<int> GetUserId();
+        int GetUserId();
         Task<string> GenerateRefreshToken();
     }
 }

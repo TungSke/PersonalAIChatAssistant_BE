@@ -2,6 +2,7 @@ using Google.Apis.Auth;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using PersonalAIAssistant.Application.DTOs.Request;
 using PersonalAIAssistant.Application.DTOs.Response;
 using PersonalAIAssistant.Application.Interfaces.Infrastructure;
@@ -22,14 +23,16 @@ namespace PersonalAIAssistant.Application.Services
         private readonly ITokenService _tokenService;
         private readonly IGoogleService _googleService;
         private readonly IAuthCookieService _authCookieService;
+        private readonly IConfiguration _configuration;
 
-        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, ITokenService tokenService, IGoogleService googleService, IAuthCookieService authCookieService)
+        public UserService(IUnitOfWork unitOfWork, IPasswordHandlerService passwordHandlerService, ITokenService tokenService, IGoogleService googleService, IAuthCookieService authCookieService, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _passwordHandlerService = passwordHandlerService ?? throw new ArgumentNullException(nameof(passwordHandlerService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _googleService = googleService ?? throw new ArgumentNullException(nameof(googleService));
             _authCookieService = authCookieService ?? throw new ArgumentNullException(nameof(authCookieService));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         private static LoginResponse MapUser(User user)
@@ -155,8 +158,9 @@ namespace PersonalAIAssistant.Application.Services
 
         public async Task<ApiResponse<LoginResponse>> Me()
         {
-            var userId = await _tokenService.GetUserId();
-            if (userId <= 0)
+            var userId = _tokenService.GetUserId();
+
+            if (userId is 0)
             {
                 return new ApiResponse<LoginResponse>
                 {
@@ -166,6 +170,7 @@ namespace PersonalAIAssistant.Application.Services
             }
 
             var user = await findUserById(userId);
+
             if (user == null)
             {
                 return new ApiResponse<LoginResponse>
@@ -244,64 +249,235 @@ namespace PersonalAIAssistant.Application.Services
             };
         }
 
-        public async Task<ApiResponse<LoginResponse>> GoogleLogin(GoogleLoginRequest request)
+        public async Task<ApiResponse<LoginResponse>> GoogleLogin(
+    GoogleLoginRequest request)
         {
-            GoogleJsonWebSignature.Payload payload;
+            if (request == null || string.IsNullOrWhiteSpace(request.IdToken))
+            {
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Google ID token is required"
+                };
+            }
+
             try
             {
-                payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
-            }
-            catch (Exception)
-            {
-                return new ApiResponse<LoginResponse>
-                {
-                    Success = false,
-                    Message = "Invalid Google token"
-                };
-            }
+                Console.WriteLine("[GoogleLogin] Start");
 
-            var user = await findUserByEmail(payload.Email);
+                var googleClientId = _configuration["Google:ClientId"];
 
-            // If the user does not exist, create a new user
-            if (user == null)
-            {
-                var newUser = new User
+                if (string.IsNullOrWhiteSpace(googleClientId))
                 {
-                    Username = payload.Name,
-                    Email = payload.Email,
-                    CreatedAt = DateTime.UtcNow,
-                    Status = UserStatus.Active
-                };
-                await _unitOfWork.UserRepository.AddAsync(newUser);
+                    Console.WriteLine(
+                        "[GoogleLogin] Google:ClientId is missing"
+                    );
+
+                    return new ApiResponse<LoginResponse>
+                    {
+                        Success = false,
+                        Message = "Google client ID is not configured"
+                    };
+                }
+
+                GoogleJsonWebSignature.Payload payload;
+
+                try
+                {
+                    Console.WriteLine(
+                        "[GoogleLogin] Validating Google token"
+                    );
+
+                    payload = await GoogleJsonWebSignature.ValidateAsync(
+                        request.IdToken,
+                        new GoogleJsonWebSignature.ValidationSettings
+                        {
+                            Audience = new[]
+                            {
+                        googleClientId
+                            }
+                        });
+
+                    Console.WriteLine(
+                        $"[GoogleLogin] Google token valid: {payload.Email}"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(
+                        $"[GoogleLogin] Google token validation failed: {ex}"
+                    );
+
+                    return new ApiResponse<LoginResponse>
+                    {
+                        Success = false,
+                        Message = "Invalid Google token"
+                    };
+                }
+
+                if (string.IsNullOrWhiteSpace(payload.Email))
+                {
+                    return new ApiResponse<LoginResponse>
+                    {
+                        Success = false,
+                        Message = "Google account does not contain a valid email"
+                    };
+                }
+
+                if (payload.EmailVerified != true)
+                {
+                    return new ApiResponse<LoginResponse>
+                    {
+                        Success = false,
+                        Message = "Google email is not verified"
+                    };
+                }
+
+                var email = payload.Email.Trim().ToLowerInvariant();
+
+                Console.WriteLine(
+                    $"[GoogleLogin] Finding user by email: {email}"
+                );
+
+                var user = await findUserByEmail(email);
+
+                if (user == null)
+                {
+                    Console.WriteLine(
+                        "[GoogleLogin] Creating new user"
+                    );
+
+                    var username = string.IsNullOrWhiteSpace(payload.Name)
+                        ? email.Split('@')[0]
+                        : payload.Name.Trim();
+
+                    user = new User
+                    {
+                        Username = username,
+                        Email = email,
+                        PasswordHash = _passwordHandlerService.HashPassword(
+                            Guid.NewGuid().ToString()
+                        ),
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        Status = UserStatus.Active
+                    };
+
+                    await _unitOfWork.UserRepository.AddAsync(user);
+
+                    Console.WriteLine(
+                        "[GoogleLogin] Saving new user"
+                    );
+
+                    await _unitOfWork.SaveChangesAsync();
+
+                    Console.WriteLine(
+                        $"[GoogleLogin] New user created. ID: {user.Id}"
+                    );
+                }
+                else
+                {
+                    Console.WriteLine(
+                        $"[GoogleLogin] Existing user found. ID: {user.Id}"
+                    );
+                }
+
+                if (user.Status != UserStatus.Active)
+                {
+                    return new ApiResponse<LoginResponse>
+                    {
+                        Success = false,
+                        Message = "Account is not active, please contact support."
+                    };
+                }
+
+                Console.WriteLine(
+                    "[GoogleLogin] Generating access token"
+                );
+
+                var accessToken =
+                    await _tokenService.GenerateJwtToken(user);
+
+                Console.WriteLine(
+                    "[GoogleLogin] Generating refresh token"
+                );
+
+                var refreshToken =
+                    await _tokenService.GenerateRefreshToken();
+
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime =
+                    DateTime.UtcNow.AddDays(7);
+                user.UpdatedAt = DateTime.UtcNow;
+
+                Console.WriteLine(
+                    "[GoogleLogin] Saving refresh token"
+                );
+
                 await _unitOfWork.SaveChangesAsync();
-                user = newUser;
-            }
 
-            if (user.Status != UserStatus.Active)
+                Console.WriteLine(
+                    "[GoogleLogin] Refresh token saved"
+                );
+
+                // Map trước khi ghi cookie để tránh cookie được ghi
+                // nhưng response tiếp tục lỗi ở bước mapping.
+                Console.WriteLine(
+                    "[GoogleLogin] Mapping user"
+                );
+
+                var loginResponse = MapUser(user);
+
+                Console.WriteLine(
+                    "[GoogleLogin] Setting cookies"
+                );
+
+                _authCookieService.SetAuthCookies(
+                    accessToken,
+                    refreshToken
+                );
+
+                Console.WriteLine(
+                    "[GoogleLogin] Cookies set"
+                );
+
+                Console.WriteLine(
+                    "[GoogleLogin] Success"
+                );
+
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = true,
+                    Message = "Login with Google successful",
+                    Data = loginResponse
+                };
+            }
+            catch (DbUpdateException ex)
             {
+                Console.WriteLine(
+                    "[GoogleLogin] Database error:"
+                );
+                Console.WriteLine(ex.ToString());
+
                 return new ApiResponse<LoginResponse>
                 {
                     Success = false,
-                    Message = "Account is not active, please contact support."
+                    Message = "Could not save Google login data"
                 };
             }
-            var accessToken = await _tokenService.GenerateJwtToken(user);
-            var refreshToken = await _tokenService.GenerateRefreshToken();
-
-            user.RefreshToken = await _tokenService.GenerateRefreshToken();
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-
-            _authCookieService.SetAuthCookies(accessToken, refreshToken);
-
-            await _unitOfWork.UserRepository.Update(user);
-            await _unitOfWork.SaveChangesAsync();
-
-            return new ApiResponse<LoginResponse>
+            catch (Exception ex)
             {
-                Success = true,
-                Message = "Login with Google successful",
-                Data = MapUser(user)
-            };
+                Console.WriteLine(
+                    "[GoogleLogin] Unhandled exception:"
+                );
+                Console.WriteLine(ex.ToString());
+
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Google login failed"
+                };
+            }
         }
     }
 }

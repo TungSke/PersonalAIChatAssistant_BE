@@ -31,7 +31,7 @@ namespace PersonalAIAssistant.Application.Services
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 50) pageSize = 50;
 
-            var userId = await _jwtService.GetUserId();
+            var userId = _jwtService.GetUserId();
             search = search?.Trim();
 
             var chattedCharacterIdsQuery = _unitOfWork.ConversationRepository
