@@ -50,8 +50,8 @@ namespace PersonalAIAssistant.Infrastructure.Services
             return new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,                  
-                SameSite = SameSiteMode.Strict,
+                Secure = true,
+                SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.Add(lifetime),
                 Path = "/",
                 IsEssential = true

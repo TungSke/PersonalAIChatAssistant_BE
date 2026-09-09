@@ -11,6 +11,7 @@ using PersonalAIAssistant.Application.DTOs.Request;
 using Xunit;
 using PersonalAIAssistant.Domain.Repositories;
 using MockQueryable;
+using Microsoft.Extensions.Configuration;
 
 namespace PersonalAIAssistant.Test.Services
 {
@@ -21,6 +22,7 @@ namespace PersonalAIAssistant.Test.Services
         private readonly Mock<ITokenService> _tokenServiceMock;
         private readonly Mock<IGoogleService> _googleServiceMock;
         private readonly Mock<IAuthCookieService> _cookieServiceMock;
+        private readonly Mock<IConfiguration> _configurationMock;
 
         private readonly UserService _userService;
 
@@ -31,13 +33,16 @@ namespace PersonalAIAssistant.Test.Services
             _tokenServiceMock = new Mock<ITokenService>();
             _googleServiceMock = new Mock<IGoogleService>();
             _cookieServiceMock = new Mock<IAuthCookieService>();
+            _configurationMock = new Mock<IConfiguration>();
 
             _userService = new UserService(
                 _unitOfWorkMock.Object,
                 _passwordServiceMock.Object,
                 _tokenServiceMock.Object,
                 _googleServiceMock.Object,
-                _cookieServiceMock.Object);
+                _cookieServiceMock.Object,
+                _configurationMock.Object
+                );
         }
 
         #region Register
@@ -247,7 +252,7 @@ namespace PersonalAIAssistant.Test.Services
         public async Task Me_Unauthorized_ReturnsUnauthorized()
         {
             // Arrange
-            _tokenServiceMock.Setup(t => t.GetUserId()).ReturnsAsync(0);
+            _tokenServiceMock.Setup(t => t.GetUserId()).Returns(0);
 
             // Act
             var result = await _userService.Me();
@@ -261,7 +266,7 @@ namespace PersonalAIAssistant.Test.Services
         public async Task Me_UserNotFound_ReturnsUserNotFound()
         {
             // Arrange
-            _tokenServiceMock.Setup(t => t.GetUserId()).ReturnsAsync(10);
+            _tokenServiceMock.Setup(t => t.GetUserId()).Returns(10);
             var userRepoMock = new Mock<IUserRepository>();
             userRepoMock.Setup(r => r.FindAsync(It.IsAny<object[]>())).ReturnsAsync((User?)null);
             _unitOfWorkMock.Setup(u => u.UserRepository).Returns(userRepoMock.Object);
@@ -279,7 +284,7 @@ namespace PersonalAIAssistant.Test.Services
         {
             // Arrange
             var user = new User { Id = 7, Email = "me@me.com", Username = "me" };
-            _tokenServiceMock.Setup(t => t.GetUserId()).ReturnsAsync(7);
+            _tokenServiceMock.Setup(t => t.GetUserId()).Returns(7);
             var userRepoMock = new Mock<IUserRepository>();
             userRepoMock.Setup(r => r.FindAsync(It.Is<object[]>(ids => (int)ids[0] == 7))).ReturnsAsync(user);
             _unitOfWorkMock.Setup(u => u.UserRepository).Returns(userRepoMock.Object);

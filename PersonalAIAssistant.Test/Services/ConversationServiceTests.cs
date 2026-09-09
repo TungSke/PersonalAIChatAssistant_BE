@@ -37,7 +37,7 @@ namespace PersonalAIAssistant.Test.Services
             // Arrange
             int currentUserId = 1;
 
-            _tokenServiceMock.Setup(x => x.GetUserId()).ReturnsAsync(currentUserId);
+            _tokenServiceMock.Setup(x => x.GetUserId()).Returns(1);
 
             // DB contains conversations for multiple users
             var conversations = new List<Conversation>
@@ -67,7 +67,7 @@ namespace PersonalAIAssistant.Test.Services
         public async Task GetConversationAsync_NoConversations_ReturnsEmptyList()
         {
             // Arrange
-            _tokenServiceMock.Setup(x => x.GetUserId()).ReturnsAsync(1);
+            _tokenServiceMock.Setup(x => x.GetUserId()).Returns(1);
             var conversations = new List<Conversation>().BuildMock();
             _unitOfWorkMock.Setup(u => u.ConversationRepository.GetAll()).Returns(conversations);
 
@@ -85,7 +85,7 @@ namespace PersonalAIAssistant.Test.Services
         public async Task CreateConversation_ModelCharacterNotFound_ThrowsKeyNotFoundException()
         {
             // Arrange
-            _tokenServiceMock.Setup(x => x.GetUserId()).ReturnsAsync(1);
+            _tokenServiceMock.Setup(x => x.GetUserId()).Returns(1);
             _unitOfWorkMock.Setup(u => u.ModelRepository.FindAsync(It.IsAny<object[]>()))
                            .ReturnsAsync((ModelsCharacter?)null);
 
@@ -102,7 +102,7 @@ namespace PersonalAIAssistant.Test.Services
             int userId = 1;
             int modelCharacterId = 5;
 
-            _tokenServiceMock.Setup(x => x.GetUserId()).ReturnsAsync(userId);
+            _tokenServiceMock.Setup(x => x.GetUserId()).Returns(userId);
             _unitOfWorkMock.Setup(u => u.ModelRepository.FindAsync(It.IsAny<object[]>()))
                            .ReturnsAsync(CreateDummyCharacter());
 
@@ -142,7 +142,7 @@ namespace PersonalAIAssistant.Test.Services
             int modelCharacterId = 7;
             var character = CreateDummyCharacter();
 
-            _tokenServiceMock.Setup(x => x.GetUserId()).ReturnsAsync(userId);
+            _tokenServiceMock.Setup(x => x.GetUserId()).Returns(userId);
             _unitOfWorkMock.Setup(u => u.ModelRepository.FindAsync(It.IsAny<object[]>()))
                            .ReturnsAsync(character);
 
@@ -181,7 +181,7 @@ namespace PersonalAIAssistant.Test.Services
             int targetConversationId = 100;
 
             // Mock token service to return hacker's user ID
-            _tokenServiceMock.Setup(x => x.GetUserId()).ReturnsAsync(hackerUserId);
+            _tokenServiceMock.Setup(x => x.GetUserId()).Returns(hackerUserId);
 
             // DB contains conversation of User 1
             var conversations = new List<Conversation>
@@ -214,7 +214,7 @@ namespace PersonalAIAssistant.Test.Services
             int userId = 1;
             int conversationId = 10;
 
-            _tokenServiceMock.Setup(x => x.GetUserId()).ReturnsAsync(userId);
+            _tokenServiceMock.Setup(x => x.GetUserId()).Returns(userId);
 
             var conversation = new Conversation { Id = conversationId, UserId = userId, Title = "My Chat", Status = ConversationStatus.Active };
             var conversations = new List<Conversation> { conversation }.BuildMock();
@@ -237,7 +237,7 @@ namespace PersonalAIAssistant.Test.Services
         public async Task DeleteConversation_UnexpectedException_ReturnsFailureResponse()
         {
             // Arrange: force an exception inside the try block
-            _tokenServiceMock.Setup(x => x.GetUserId()).ThrowsAsync(new InvalidOperationException("token service unavailable"));
+            _tokenServiceMock.Setup(x => x.GetUserId()).Throws(new InvalidOperationException("token service unavailable"));
 
             // Act
             var result = await _conversationService.DeleteConversation(1);

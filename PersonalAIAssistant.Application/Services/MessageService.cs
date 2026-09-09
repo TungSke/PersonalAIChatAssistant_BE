@@ -33,7 +33,7 @@ namespace PersonalAIAssistant.Application.Services
             long? beforeMessageId = null)
         {
 
-            var userId = await _jwtService.GetUserId();
+            var userId = _jwtService.GetUserId();
 
             if (limit <= 0)
             {
@@ -133,7 +133,7 @@ namespace PersonalAIAssistant.Application.Services
         {
             try
             {
-                var userId = await _jwtService.GetUserId();
+                var userId =  _jwtService.GetUserId();
 
                 // Validate conversation exists and belongs to current user
                 var conversation = await _unitOfWork.ConversationRepository
@@ -242,7 +242,7 @@ namespace PersonalAIAssistant.Application.Services
         {
             try
             {
-                var userId = await _jwtService.GetUserId();
+                var userId = _jwtService.GetUserId();
                 var messageExisted = await _unitOfWork.MessageRepository
                     .GetAll()
                     .FirstOrDefaultAsync(x => x.Id == messageId && x.UserId == userId);
@@ -273,7 +273,7 @@ namespace PersonalAIAssistant.Application.Services
         {
             try
             {
-                var userId = await _jwtService.GetUserId();
+                var userId = _jwtService.GetUserId();
                 var conversationExisted = await _unitOfWork.ConversationRepository
                     .GetAll()
                     .FirstOrDefaultAsync(x => x.Id == conversationId && x.UserId == userId);
