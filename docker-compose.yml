@@ -1,0 +1,94 @@
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: PersonalAIAssistant.API/Dockerfile
+
+    container_name: personal-ai-api
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # SQL Server
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=PersonalAIAssistant;User Id=sa;Password=${SQL_PASSWORD};TrustServerCertificate=True;"
+
+      # Redis
+      ConnectionStrings__RedisConnection: "redis:6379,abortConnect=false"
+
+      # JWT
+      Jwt__Issuer: "${JWT_ISSUER}"
+      Jwt__Audience: "${JWT_AUDIENCE}"
+      Jwt__Key: "${JWT_KEY}"
+
+      # Email
+      EmailSettings__SmtpServer: "smtp.gmail.com"
+      EmailSettings__Port: "587"
+      EmailSettings__SenderEmail: "${SMTP_EMAIL}"
+      EmailSettings__SenderName: "PersonalAI AI Support Team"
+      EmailSettings__Password: "${SMTP_PASSWORD}"
+
+      # Gemini
+      GenerativeAI__AIAPIKey: "${GEMINI_API_KEY}"
+      GenerativeAI__AIAPIKey2: "${GEMINI_API_KEY_2}"
+
+      # Google
+      Google__ClientId: "${GOOGLE_CLIENT_ID}"
+
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
+    container_name: personal-ai-sqlserver
+
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SQL_PASSWORD}"
+
+    ports:
+      - "1433:1433"
+
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\""
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+  redis:
+    image: redis:8
+
+    container_name: personal-ai-redis
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+volumes:
+  sqlserver_data:
+  redis_data:
