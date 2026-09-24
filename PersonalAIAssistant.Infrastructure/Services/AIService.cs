@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using PersonalAIAssistant.Domain;
 using PersonalAIAssistant.Domain.Entities;
 using PersonalAIAssistant.Application.Interfaces.Infrastructure;
+using PersonalAIAssistant.Application.DTOs.Response;
 
 namespace PersonalAIAssistant.Infrastructure.Services
 {
@@ -185,9 +186,11 @@ namespace PersonalAIAssistant.Infrastructure.Services
                 MaxOutputTokens = 500
             };
 
-            return await GenerateWithFallbackAsync(
+            var messageResponse = await GenerateWithFallbackAsync(
                 contents,
                 config);
+            Console.WriteLine("Message: " + messageResponse);
+            return messageResponse;
         }
 
         public async Task<string> SummarizeConversation(string? currentSummary, List<Message> recentMessages)

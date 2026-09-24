@@ -102,7 +102,7 @@ namespace PersonalAIAssistant.Application.Services
                 ModelId = conversation.ModelCharacterId.ToString(),
                 ModelName = conversation.ModelsCharacter?.Name, 
                 ModelAvatarUrl = conversation.ModelsCharacter?.AvatarUrl,
-                FirstMessageId = messages.LastOrDefault()?.Id,
+                FirstMessageId = messages.FirstOrDefault()?.Id,
 
                 Messages = messages.Adapt<List<MessageResponse>>()
             };
